@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib"
 import * as codebuild from "aws-cdk-lib/aws-codebuild"
 import * as codepipeline from "aws-cdk-lib/aws-codepipeline"
 import * as codepipeline_actions from "aws-cdk-lib/aws-codepipeline-actions"
+import * as iam from "aws-cdk-lib/aws-iam"
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager"
 import { Construct } from "constructs"
 
@@ -12,9 +13,30 @@ export class BlogCdkStack extends cdk.Stack {
     // Fetch the GitHub token from AWS Secrets Manager
     const githubToken = secretsmanager.Secret.fromSecretNameV2(this, "GitHubToken", "GitHubToken")
 
+    // Self-mutation role
+    const pipelineRole = new iam.Role(this, "PipelineRole", {
+      assumedBy: new iam.ServicePrincipal("codepipeline.amazonaws.com")
+    })
+
+    pipelineRole.assumeRolePolicy?.addStatements(
+      new iam.PolicyStatement({
+        actions: ["sts:AssumeRole"],
+        principals: [new iam.ServicePrincipal("codebuild.amazonaws.com")]
+      })
+    )
+
+    // Attach SSM read permissions to allow bootstrap stack access
+    pipelineRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ["ssm:GetParameter"],
+        resources: [`arn:aws:ssm:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:parameter/cdk-bootstrap/*`]
+      })
+    )
+
     // Define CodePipeline
     const pipeline = new codepipeline.Pipeline(this, "ChaimCodesBlogPipeline", {
-      pipelineName: "ChaimCodesBlogPipeline"
+      pipelineName: "ChaimCodesBlogPipeline",
+      role: pipelineRole
     })
 
     // Add GitHub repos as Source artifacts
@@ -49,6 +71,7 @@ export class BlogCdkStack extends cdk.Stack {
       actions: [
         new codepipeline_actions.CodeBuildAction({
           actionName: "Self-Mutate",
+          role: pipelineRole,
           project: new codebuild.PipelineProject(this, "SelfMutationProject", {
             buildSpec: codebuild.BuildSpec.fromObject({
               version: "0.2",

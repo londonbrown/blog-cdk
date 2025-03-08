@@ -18,8 +18,8 @@ export class BlogCdkStack extends cdk.Stack {
     })
 
     // Add GitHub repos as Source artifacts
-    const cdkSourceOutput = new codepipeline.Artifact("CDKSource")
-    const lambdasSourceOutput = new codepipeline.Artifact("LambdasSource")
+    const cdkSource = new codepipeline.Artifact("CDKSource")
+    const lambdaSource = new codepipeline.Artifact("LambdasSource")
 
     pipeline.addStage({
       stageName: "Source",
@@ -30,7 +30,7 @@ export class BlogCdkStack extends cdk.Stack {
           repo: "blog-cdk",
           branch: "main",
           oauthToken: githubToken.secretValue,
-          output: cdkSourceOutput
+          output: cdkSource
         }),
         new codepipeline_actions.GitHubSourceAction({
           actionName: "GitHubSource-Lambdas",
@@ -38,44 +38,66 @@ export class BlogCdkStack extends cdk.Stack {
           repo: "blog-lambdas",
           branch: "main",
           oauthToken: githubToken.secretValue,
-          output: lambdasSourceOutput
+          output: lambdaSource
         })
       ]
     })
 
-    // Create a CodeBuild step to compile and package all Lambda functions.
-    const lambdaBuildProject = new codebuild.PipelineProject(this, "LambdaBuildProject", {
-      buildSpec: codebuild.BuildSpec.fromObject({
-        version: "0.2",
-        phases: {
-          install: {
-            commands: ["echo 'Using prebuild Rust Lambda Docker image'"]
-          },
-          build: {
-            commands: [
-              "docker run --rm -v $(pwd):/workspace -w /workspace ghcr.io/cargo-lambda/cargo-lambda:latest cargo lambda build --release --output-format zip"
-            ]
-          }
-        },
-        artifacts: {
-          files: ["target/lambda/**/*.zip"]
-        }
-      }),
-      environment: {
-        buildImage: codebuild.LinuxBuildImage.STANDARD_6_0,
-        privileged: true
-      }
+    // Self-mutation stage
+    pipeline.addStage({
+      stageName: "SelfMutate",
+      actions: [
+        new codepipeline_actions.CodeBuildAction({
+          actionName: "Self-Mutate",
+          project: new codebuild.PipelineProject(this, "SelfMutationProject", {
+            buildSpec: codebuild.BuildSpec.fromObject({
+              version: "0.2",
+              phases: {
+                install: {
+                  commands: ["npm install -g aws-cdk", "npm install"]
+                },
+                build: {
+                  commands: ["npx cdk deploy --require-approval never"]
+                }
+              }
+            })
+          }),
+          input: cdkSource
+        })
+      ]
     })
 
     // Add Lambda Build stage
     const lambdaBuildOutput = new codepipeline.Artifact("LambdaBuildOutput")
+
     pipeline.addStage({
-      stageName: "Build-Lambda",
+      stageName: "BuildLambdas",
       actions: [
         new codepipeline_actions.CodeBuildAction({
-          actionName: "BuildLambda",
-          project: lambdaBuildProject,
-          input: lambdasSourceOutput,
+          actionName: "BuildLambdaArtifacts",
+          project: new codebuild.PipelineProject(this, "LambdaBuildProject", {
+            buildSpec: codebuild.BuildSpec.fromObject({
+              version: "0.2",
+              phases: {
+                install: {
+                  commands: ["echo 'Using Docker for Rust Lambda builds'"]
+                },
+                build: {
+                  commands: [
+                    "docker run --rm -v $(pwd):/workspace -w /workspace ghcr.io/cargo-lambda/cargo-lambda:latest cargo lambda build --release --output-format zip"
+                  ]
+                }
+              },
+              artifacts: {
+                files: ["target/lambda/**/*.zip"]
+              }
+            }),
+            environment: {
+              buildImage: codebuild.LinuxBuildImage.STANDARD_6_0,
+              privileged: true
+            }
+          }),
+          input: lambdaSource,
           outputs: [lambdaBuildOutput]
         })
       ]

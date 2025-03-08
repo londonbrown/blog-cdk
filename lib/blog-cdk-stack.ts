@@ -53,7 +53,7 @@ export class BlogCdkStack extends cdk.Stack {
           },
           build: {
             commands: [
-              "docker run --rm -v $(pwd):/workspace -w /workspace ghcr.io/cargo-lambda/cargo-lambda build --release --output-format zip"
+              "docker run --rm -v $(pwd):/workspace -w /workspace ghcr.io/cargo-lambda/cargo-lambda:latest cargo lambda build --release --output-format zip"
             ]
           }
         },

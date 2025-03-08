@@ -49,10 +49,12 @@ export class BlogCdkStack extends cdk.Stack {
         version: "0.2",
         phases: {
           install: {
-            commands: ["rustup target add x86_64-unknown-linux-musl", "cargo install cargo-lambda"]
+            commands: ["echo 'Using prebuild Rust Lambda Docker image'"]
           },
           build: {
-            commands: ["cargo lambda build --release --output-format zip"]
+            commands: [
+              "docker run --rm -v $(pwd):/workspace -w /workspace ghcr.io/cargo-lambda/cargo-lambda build --release --output-format zip"
+            ]
           }
         },
         artifacts: {
@@ -60,7 +62,8 @@ export class BlogCdkStack extends cdk.Stack {
         }
       }),
       environment: {
-        buildImage: codebuild.LinuxBuildImage.STANDARD_6_0
+        buildImage: codebuild.LinuxBuildImage.STANDARD_6_0,
+        privileged: true
       }
     })
 

@@ -43,14 +43,20 @@ export class BlogCdkStack extends cdk.Stack {
       ]
     })
 
-    // Create a simple CodeBuild project
-    const buildProject = new codebuild.PipelineProject(this, "SimpleBuildProject", {
+    // Create a CodeBuild step to compile and package all Lambda functions.
+    const lambdaBuildProject = new codebuild.PipelineProject(this, "LambdaBuildProject", {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: "0.2",
         phases: {
+          install: {
+            commands: ["rustup target add x86_64-unknown-linux-musl", "cargo install cargo-lambda"]
+          },
           build: {
-            commands: ['echo "Hello from CodeBuild!"']
+            commands: ["cargo lambda build --release --output-format zip"]
           }
+        },
+        artifacts: {
+          files: ["target/lambda/**/*.zip"]
         }
       }),
       environment: {
@@ -58,14 +64,16 @@ export class BlogCdkStack extends cdk.Stack {
       }
     })
 
-    // Add "Build" stage to Pipeline
+    // Add Lambda Build stage
+    const lambdaBuildOutput = new codepipeline.Artifact("LambdaBuildOutput")
     pipeline.addStage({
-      stageName: "Build",
+      stageName: "Build-Lambda",
       actions: [
         new codepipeline_actions.CodeBuildAction({
-          actionName: "RunBuild",
-          project: buildProject,
-          input: cdkSourceOutput
+          actionName: "BuildLambda",
+          project: lambdaBuildProject,
+          input: lambdasSourceOutput,
+          outputs: [lambdaBuildOutput]
         })
       ]
     })

@@ -17,18 +17,28 @@ export class BlogCdkStack extends cdk.Stack {
       pipelineName: "ChaimCodesBlogPipeline"
     })
 
-    // Add GitHub as the Source
-    const sourceOutput = new codepipeline.Artifact()
+    // Add GitHub repos as Source artifacts
+    const cdkSourceOutput = new codepipeline.Artifact("CDKSource")
+    const lambdasSourceOutput = new codepipeline.Artifact("LambdasSource")
+
     pipeline.addStage({
       stageName: "Source",
       actions: [
         new codepipeline_actions.GitHubSourceAction({
-          actionName: "GitHubSource",
+          actionName: "GitHubSource-CDK",
           owner: "londonbrown",
           repo: "blog-cdk",
           branch: "main",
           oauthToken: githubToken.secretValue,
-          output: sourceOutput
+          output: cdkSourceOutput
+        }),
+        new codepipeline_actions.GitHubSourceAction({
+          actionName: "GitHubSource-Lambdas",
+          owner: "londonbrown",
+          repo: "blog-lambdas",
+          branch: "main",
+          oauthToken: githubToken.secretValue,
+          output: lambdasSourceOutput
         })
       ]
     })
@@ -55,7 +65,7 @@ export class BlogCdkStack extends cdk.Stack {
         new codepipeline_actions.CodeBuildAction({
           actionName: "RunBuild",
           project: buildProject,
-          input: sourceOutput
+          input: cdkSourceOutput
         })
       ]
     })

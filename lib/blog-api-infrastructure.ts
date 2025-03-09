@@ -21,23 +21,23 @@ export class BlogAPIInfrastructure extends cdk.Stack {
     super(scope, id, props)
     const stage = props.stage
 
-    const blogPostsTable = new dynamodb.Table(this, `BlogPostsTable${stage}`, {
-      tableName: `BlogPosts${stage}`,
-      partitionKey: { name: "postId", type: dynamodb.AttributeType.STRING },
-      sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING },
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.RETAIN
-    })
-
-    blogPostsTable.addGlobalSecondaryIndex({
-      indexName: "PublishedIndex",
-      partitionKey: { name: "published", type: AttributeType.STRING },
-      sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING }
-    })
-
-    new cdk.CfnOutput(this, "BlogPostsTableName", {
-      value: blogPostsTable.tableName
-    })
+    // const blogPostsTable = new dynamodb.Table(this, `BlogPostsTable${stage}`, {
+    //   tableName: `BlogPosts${stage}`,
+    //   partitionKey: { name: "postId", type: dynamodb.AttributeType.STRING },
+    //   sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING },
+    //   billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+    //   removalPolicy: cdk.RemovalPolicy.RETAIN
+    // })
+    //
+    // blogPostsTable.addGlobalSecondaryIndex({
+    //   indexName: "PublishedIndex",
+    //   partitionKey: { name: "published", type: AttributeType.STRING },
+    //   sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING }
+    // })
+    //
+    // new cdk.CfnOutput(this, "BlogPostsTableName", {
+    //   value: blogPostsTable.tableName
+    // })
 
     const api = new apigateway.RestApi(this, `BlogAPIGateway${stage}`, {
       restApiName: `Blog API (${stage})`,
@@ -52,12 +52,12 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         iam.ManagedPolicy.fromAwsManagedPolicyName("service-role/AWSLambdaBasicExecutionRole")
       ]
     })
-    getPostRole.addToPolicy(
-      new iam.PolicyStatement({
-        actions: ["dynamodb:GetItem"],
-        resources: [blogPostsTable.tableArn]
-      })
-    )
+    // getPostRole.addToPolicy(
+    //   new iam.PolicyStatement({
+    //     actions: ["dynamodb:GetItem"],
+    //     resources: [blogPostsTable.tableArn]
+    //   })
+    // )
 
     const lambdaConfigs = [
       {
@@ -73,10 +73,10 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         path: "{id}",
         method: "GET",
         zipFile: "lambdas/get-post.zip",
-        role: getPostRole,
-        environment: {
-          BLOG_POSTS_TABLE: blogPostsTable.tableName
-        }
+        role: getPostRole
+        // environment: {
+        //   BLOG_POSTS_TABLE: blogPostsTable.tableName
+        // }
       }
     ]
 
@@ -85,8 +85,8 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         role: config.role,
         runtime: lambda.Runtime.PROVIDED_AL2023,
         handler: "bootstrap",
-        code: lambda.Code.fromAsset(config.zipFile),
-        environment: config.environment
+        code: lambda.Code.fromAsset(config.zipFile)
+        // environment: config.environment
       })
       const apiResource = config.root.addResource(config.path)
       apiResource.addMethod(config.method, new apigateway.LambdaIntegration(lambdaFunction))

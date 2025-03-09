@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import * as cdk from "aws-cdk-lib"
 import { BlogGitHubStagingInfrastructure } from "../lib/blog-git-hub-staging-infrastructure"
+import { BlogAPIInfrastructure, BlogAPIStage } from "../lib/blog-api-infrastructure"
 
 const app = new cdk.App()
 new BlogGitHubStagingInfrastructure(app, "BlogGitHubStagingInfrastructure", {
@@ -14,4 +15,10 @@ new BlogGitHubStagingInfrastructure(app, "BlogGitHubStagingInfrastructure", {
    * want to deploy the stack to. */
   // env: { account: '123456789012', region: 'us-east-1' },
   /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
+})
+new BlogAPIInfrastructure(app, "BlogAPIInfrastructureBeta", {
+  stage: BlogAPIStage.Beta
+})
+new BlogAPIInfrastructure(app, "BlogAPIInfrastructureProd", {
+  stage: BlogAPIStage.Prod
 })

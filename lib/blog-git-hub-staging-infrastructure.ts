@@ -15,16 +15,17 @@ export class BlogGitHubStagingInfrastructure extends cdk.Stack {
     // Create IAM Role for GitHub Actions
     const githubRole = new iam.Role(this, "BlogCDKGitHubOIDCDeployRole", {
       assumedBy: new iam.FederatedPrincipal(
-          oidcProvider.openIdConnectProviderArn,
-          {
-            "StringEquals": {
-              "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
-            },
-            "StringLike": {
-              "token.actions.githubusercontent.com:sub": "repo:londonbrown/blog-cdk:ref:refs/heads/main"
-            }
+        oidcProvider.openIdConnectProviderArn,
+        {
+          StringEquals: {
+            "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
           },
-          "sts:AssumeRoleWithWebIdentity"
+          StringLike: {
+            "token.actions.githubusercontent.com:sub":
+              "repo:londonbrown/blog-cdk:ref:refs/heads/main"
+          }
+        },
+        "sts:AssumeRoleWithWebIdentity"
       ),
       roleName: "BlogCDKGitHubOIDCDeployRole",
       description: "IAM role assumed by GitHub Actions for deploying CDK"

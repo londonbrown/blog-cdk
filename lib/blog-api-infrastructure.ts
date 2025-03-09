@@ -21,7 +21,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
 
     lambdaConfigs.forEach((config) => {
       new lambda.Function(this, `${config.name}Lambda${stage}`, {
-        runtime: lambda.Runtime.PROVIDED_AL2,
+        runtime: lambda.Runtime.PROVIDED_AL2023,
         handler: "bootstrap",
         code: lambda.Code.fromAsset(config.zipFile)
       })

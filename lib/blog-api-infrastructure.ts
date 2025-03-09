@@ -1,6 +1,8 @@
 import * as cdk from "aws-cdk-lib"
 import * as lambda from "aws-cdk-lib/aws-lambda"
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
+import { AttributeType } from "aws-cdk-lib/aws-dynamodb"
 
 import { Construct } from "constructs"
 
@@ -17,6 +19,24 @@ export class BlogAPIInfrastructure extends cdk.Stack {
   constructor(scope: Construct, id: string, props: BlogAPIInfrastructureProps) {
     super(scope, id, props)
     const stage = props.stage
+
+    const blogPostsTable = new dynamodb.Table(this, "BlogPostsTable", {
+      tableName: "BlogPosts",
+      partitionKey: { name: "postId", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.RETAIN
+    })
+
+    blogPostsTable.addGlobalSecondaryIndex({
+      indexName: "PublishedIndex",
+      partitionKey: { name: "published", type: AttributeType.BINARY },
+      sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING }
+    })
+
+    new cdk.CfnOutput(this, "BlogPostsTableName", {
+      value: blogPostsTable.tableName
+    })
 
     const api = new apigateway.RestApi(this, `BlogAPIGateway${stage}`, {
       restApiName: `Blog API (${stage})`,

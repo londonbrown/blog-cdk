@@ -32,6 +32,9 @@ jobs:
             filename=$(basename "$url")
             curl -L -o "lambdas/$filename" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$url"
           done < release_assets.txt
+          echo "DEBUG: Showing lambdas dir"
+          pwd
+          ls lambdas
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4

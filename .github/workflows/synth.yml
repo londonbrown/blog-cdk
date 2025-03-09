@@ -53,8 +53,9 @@ jobs:
           mkdir -p cdk.out
           cdk synth
 
-      - name: Upload Synthesized Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: cdk-artifacts
-          path: cdk.out
+      - name: Set Commit Hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Upload Synthesized Artifacts to S3
+        run: |
+          aws s3 cp --recursive cdk.out/ s3://${{ secrets.S3_BUCKET_NAME }}/cdk-out/$COMMIT_HASH/

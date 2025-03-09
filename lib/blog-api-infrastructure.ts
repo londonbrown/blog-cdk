@@ -7,8 +7,8 @@ import { AttributeType } from "aws-cdk-lib/aws-dynamodb"
 import { Construct } from "constructs"
 
 export enum BlogAPIStage {
-  Beta,
-  Prod
+  BETA = "Beta",
+  PROD = "Prod"
 }
 
 export type BlogAPIInfrastructureProps = cdk.StackProps & {

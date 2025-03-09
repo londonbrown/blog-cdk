@@ -17,8 +17,8 @@ new BlogGitHubStagingInfrastructure(app, "BlogGitHubStagingInfrastructure", {
   /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 })
 new BlogAPIInfrastructure(app, "BlogAPIInfrastructureBeta", {
-  stage: BlogAPIStage.Beta
+  stage: BlogAPIStage.BETA
 })
 new BlogAPIInfrastructure(app, "BlogAPIInfrastructureProd", {
-  stage: BlogAPIStage.Prod
+  stage: BlogAPIStage.PROD
 })

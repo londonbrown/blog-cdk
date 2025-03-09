@@ -20,23 +20,23 @@ export class BlogAPIInfrastructure extends cdk.Stack {
     super(scope, id, props)
     const stage = props.stage
 
-    const blogPostsTable = new dynamodb.Table(this, "BlogPostsTable", {
-      tableName: "BlogPosts",
-      partitionKey: { name: "postId", type: dynamodb.AttributeType.STRING },
-      sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING },
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.RETAIN
-    })
-
-    blogPostsTable.addGlobalSecondaryIndex({
-      indexName: "PublishedIndex",
-      partitionKey: { name: "published", type: AttributeType.BINARY },
-      sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING }
-    })
-
-    new cdk.CfnOutput(this, "BlogPostsTableName", {
-      value: blogPostsTable.tableName
-    })
+    // const blogPostsTable = new dynamodb.Table(this, "BlogPostsTable", {
+    //   tableName: "BlogPosts",
+    //   partitionKey: { name: "postId", type: dynamodb.AttributeType.STRING },
+    //   sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING },
+    //   billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+    //   removalPolicy: cdk.RemovalPolicy.RETAIN
+    // })
+    //
+    // blogPostsTable.addGlobalSecondaryIndex({
+    //   indexName: "PublishedIndex",
+    //   partitionKey: { name: "published", type: AttributeType.BINARY },
+    //   sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING }
+    // })
+    //
+    // new cdk.CfnOutput(this, "BlogPostsTableName", {
+    //   value: blogPostsTable.tableName
+    // })
 
     const api = new apigateway.RestApi(this, `BlogAPIGateway${stage}`, {
       restApiName: `Blog API (${stage})`,

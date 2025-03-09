@@ -18,6 +18,21 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Fetch Latest Release from blog-lambdas
+        id: get_release
+        run: |
+          RELEASE_JSON=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/londonbrown/blog-lambdas/releases/latest")
+          echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name | endswith(".zip")) | .browser_download_url' > release_assets.txt
+
+      - name: Download and Extract Lambda Artifacts
+        run: |
+          mkdir -p lambdas
+          while IFS= read -r url; do
+            filename=$(basename "$url")
+            curl -L -o "lambdas/$filename" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$url"
+          done < release_assets.txt
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:

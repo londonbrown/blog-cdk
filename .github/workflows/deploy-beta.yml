@@ -20,19 +20,18 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Download Synthesized Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: cdk-out
-        path: cdk.out/
-        run-id: ${{ github.event.workflow_run.id }}
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/BlogCDKGitHubOIDCDeployRole
         aws-region: us-east-1
+
+    - name: Set Commit Hash
+      run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+    - name: Download Synthesized Artifacts from S3
+      run: |
+        aws s3 cp --recursive s3://${{ secrets.CDK_STAGING_BUCKET_NAME }}/cdk-out/$COMMIT_HASH/ cdk.out/
 
     - name: Install CDK
       run: |

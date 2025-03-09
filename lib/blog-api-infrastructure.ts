@@ -58,7 +58,10 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         root: postRoot,
         path: "{id}",
         method: "GET",
-        zipFile: "lambdas/get-post.zip"
+        zipFile: "lambdas/get-post.zip",
+        environment: {
+          BLOG_POSTS_TABLE: blogPostsTable.tableName
+        }
       }
     ]
 
@@ -66,7 +69,8 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       const lambdaFunction = new lambda.Function(this, `${config.name}Lambda${stage}`, {
         runtime: lambda.Runtime.PROVIDED_AL2023,
         handler: "bootstrap",
-        code: lambda.Code.fromAsset(config.zipFile)
+        code: lambda.Code.fromAsset(config.zipFile),
+        environment: config.environment
       })
       const apiResource = config.root.addResource(config.path)
       apiResource.addMethod(config.method, new apigateway.LambdaIntegration(lambdaFunction))

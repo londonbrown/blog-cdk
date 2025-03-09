@@ -43,6 +43,8 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       description: "API Gateway for the blog service"
     })
 
+    const postRoot = api.root.addResource("post")
+
     const lambdaConfigs = [
       {
         name: "HelloWorld",
@@ -50,6 +52,13 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         path: "hello",
         method: "GET",
         zipFile: "lambdas/hello-world.zip"
+      },
+      {
+        name: "GetPost",
+        root: postRoot,
+        path: "{id}",
+        method: "GET",
+        zipFile: "lambdas/get-post.zip"
       }
     ]
 

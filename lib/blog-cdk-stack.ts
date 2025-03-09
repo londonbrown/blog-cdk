@@ -12,5 +12,24 @@ export class BlogCdkStack extends cdk.Stack {
       clientIds: ["sts.amazonaws.com"]
     })
 
+    // Create IAM Role for GitHub Actions
+    const githubRole = new iam.Role(this, "GitHubOIDCDeployRole", {
+      assumedBy: new iam.FederatedPrincipal(
+          oidcProvider.openIdConnectProviderArn,
+          {
+            "StringEquals": {
+              "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+            },
+            "StringLike": {
+              "token.actions.githubusercontent.com:sub": "repo:londonbrown/blog-cdk:*"
+            }
+          },
+          "sts:AssumeRoleWithWebIdentity"
+      ),
+      description: "IAM role assumed by GitHub Actions for deploying CDK"
+    })
+
+    // Attach necessary policies
+    githubRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess"))
   }
 }

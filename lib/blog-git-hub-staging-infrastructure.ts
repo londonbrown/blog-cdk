@@ -1,5 +1,6 @@
 import * as cdk from "aws-cdk-lib"
 import * as iam from "aws-cdk-lib/aws-iam"
+import * as s3 from "aws-cdk-lib/aws-s3"
 import { Construct } from "constructs"
 
 export class BlogGitHubStagingInfrastructure extends cdk.Stack {
@@ -33,5 +34,11 @@ export class BlogGitHubStagingInfrastructure extends cdk.Stack {
 
     // Attach necessary policies
     githubRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess"))
+
+    const bucketName = process.env.CDK_STAGING_BUCKET_NAME
+
+    new s3.Bucket(this, "BlogCDKGitHubStagingBucket", {
+      bucketName: bucketName
+    })
   }
 }

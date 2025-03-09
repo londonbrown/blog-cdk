@@ -32,7 +32,7 @@ jobs:
       - name: Synthesize CDK Stack
         run: |
           mkdir -p cdk.out
-          cdk synth > cdk.out/template.json
+          cdk synth 2> /dev/null > cdk.out/template.json
 
       - name: Upload Synthesized Artifacts
         uses: actions/upload-artifact@v4

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import * as cdk from "aws-cdk-lib"
-import { BlogCdkStack } from "../lib/blog-cdk-stack"
+import { BlogGitHubStagingInfrastructure } from "../lib/blog-git-hub-staging-infrastructure"
 
 const app = new cdk.App()
-new BlogCdkStack(app, "BlogCdkStack", {
+new BlogGitHubStagingInfrastructure(app, "BlogGitHubStagingInfrastructure", {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */

@@ -21,10 +21,10 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubOIDCDeployRole
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/BlogCDKGitHubOIDCDeployRole
           aws-region: us-east-1
 
-      - name: Install CDL
+      - name: Install CDK
         run: |
           npm install -g aws-cdk
           npm ci

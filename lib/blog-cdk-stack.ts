@@ -7,13 +7,13 @@ export class BlogCdkStack extends cdk.Stack {
     super(scope, id, props)
 
     // Define GitHub OIDC Provider
-    const oidcProvider = new iam.OpenIdConnectProvider(this, "GitHubOIDCProvider", {
+    const oidcProvider = new iam.OpenIdConnectProvider(this, "BlogCDKGitHubOIDCProvider", {
       url: "https://token.actions.githubusercontent.com",
       clientIds: ["sts.amazonaws.com"]
     })
 
     // Create IAM Role for GitHub Actions
-    const githubRole = new iam.Role(this, "GitHubOIDCDeployRole", {
+    const githubRole = new iam.Role(this, "BlogCDKGitHubOIDCDeployRole", {
       assumedBy: new iam.FederatedPrincipal(
           oidcProvider.openIdConnectProviderArn,
           {
@@ -26,6 +26,7 @@ export class BlogCdkStack extends cdk.Stack {
           },
           "sts:AssumeRoleWithWebIdentity"
       ),
+      roleName: "BlogCDKGitHubOIDCDeployRole",
       description: "IAM role assumed by GitHub Actions for deploying CDK"
     })
 

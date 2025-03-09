@@ -1,4 +1,4 @@
-name: Deploy API Stack to Beta
+name: Deploy BlogAPIInfrastructureBeta Stack to AWS
 
 on:
   workflow_run:
@@ -25,6 +25,8 @@ jobs:
       with:
         name: cdk-out
         path: cdk.out/
+        run-id: ${{ github.event.workflow_run.id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4

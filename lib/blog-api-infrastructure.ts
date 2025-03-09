@@ -21,7 +21,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
     const lambdaConfigs = [{ name: "HelloWorld", zipFile: "lambdas/hello-world.zip" }]
 
     lambdaConfigs.forEach((config) => {
-      const lambdaPath = path.join("..", config.zipFile)
+      const lambdaPath = config.zipFile
       console.log(`debug: path - ${lambdaPath}`)
       console.log(`debug: exists? ${fs.existsSync(lambdaPath)}`)
 

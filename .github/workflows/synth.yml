@@ -58,4 +58,4 @@ jobs:
 
       - name: Upload Synthesized Artifacts to S3
         run: |
-          aws s3 cp --recursive cdk.out/ s3://${{ secrets.S3_BUCKET_NAME }}/cdk-out/$COMMIT_HASH/
+          aws s3 cp --recursive cdk.out/ s3://$CDK_STAGING_BUCKET_NAME/cdk-out/$COMMIT_HASH/

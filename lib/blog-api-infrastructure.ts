@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib"
 import * as lambda from "aws-cdk-lib/aws-lambda"
 import * as path from "node:path"
 import { Construct } from "constructs"
+import * as fs from "node:fs"
 
 export enum BlogAPIStage {
   Beta,
@@ -20,10 +21,14 @@ export class BlogAPIInfrastructure extends cdk.Stack {
     const lambdaConfigs = [{ name: "HelloWorld", zipFile: "lambdas/hello-world.zip" }]
 
     lambdaConfigs.forEach((config) => {
+      const lambdaPath = path.join("..", config.zipFile)
+      console.log(`debug: path - ${lambdaPath}`)
+      console.log(`debug: exists? ${fs.existsSync(lambdaPath)}`)
+
       new lambda.Function(this, `${config.name}Lambda${stage}`, {
         runtime: lambda.Runtime.PROVIDED_AL2,
         handler: "bootstrap",
-        code: lambda.Code.fromAsset(path.join("..", config.zipFile))
+        code: lambda.Code.fromAsset(lambdaPath)
       })
     })
   }

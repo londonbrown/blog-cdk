@@ -38,4 +38,4 @@ jobs:
         run: |
           npm install -g aws-cdk
           npm ci
-          cdk deploy BlogGitHubStagingInfrastructure --require-approval never
+          cdk deploy --app cdk.out BlogGitHubStagingInfrastructure --require-approval never

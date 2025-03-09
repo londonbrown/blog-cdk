@@ -23,7 +23,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       new lambda.Function(this, `${config.name}Lambda${stage}`, {
         runtime: lambda.Runtime.PROVIDED_AL2,
         handler: "bootstrap",
-        code: lambda.Code.fromAsset(path.join(__dirname, config.zipFile))
+        code: lambda.Code.fromAsset(path.join("..", config.zipFile))
       })
     })
   }

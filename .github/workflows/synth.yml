@@ -1,0 +1,40 @@
+name: Synthesize CDK Stack
+
+on:
+  push:
+    branches: ["main"]
+  repository_dispatch:
+    types: ["lambda-release"] # Runs when triggered by londonbrown/blog-lambdas
+  workflow_dispatch:
+
+jobs:
+  synth:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubOIDCDeployRole
+          aws-region: us-east-1
+
+      - name: Install CDL
+        run: |
+          npm install -g aws-cdk
+          npm ci
+
+      - name: Synthesize CDK Stack
+        run: |
+          cdk synth > cdk.out/template.json
+
+      - name: Upload Synthesized Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdk-artifacts
+          path: cdk.out

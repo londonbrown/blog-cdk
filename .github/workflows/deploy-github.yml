@@ -16,9 +16,24 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Download CDK Artifacts
         uses: actions/download-artifact@v4
         with:
           name: cdk-artifacts
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/BlogCDKGitHubOIDCDeployRole
+          aws-region: us-east-1
+
+      - name: Deploy GitHub Infrastructure Stack
+        run: |
+          npm install -g aws-cdk
+          npm ci
+          cdk deploy BlogGitHubStagingInfrastructure --require-approval never

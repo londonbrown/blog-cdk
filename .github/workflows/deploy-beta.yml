@@ -1,0 +1,43 @@
+name: Deploy API Stack to Beta
+
+on:
+  workflow_run:
+    workflows: ["Deploy BlogGitHubStagingInfrastructure Stack to AWS"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Download Synthesized Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: cdk-out
+        path: cdk.out/
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/BlogCDKGitHubOIDCDeployRole
+        aws-region: us-east-1
+
+    - name: Install CDK
+      run: |
+        npm install -g aws-cdk
+        npm ci
+
+    - name: Deploy API Stack to Beta
+      run: |
+        cdk deploy --app cdk.out BlogAPIInfrastructureBeta --require-approval never
+

@@ -34,8 +34,11 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/BlogCDKGitHubOIDCDeployRole
           aws-region: us-east-1
 
-      - name: Deploy GitHub Infrastructure Stack
+      - name: Install CDK
         run: |
           npm install -g aws-cdk
           npm ci
+
+      - name: Deploy GitHub Infrastructure Stack
+        run: |
           cdk deploy --app cdk.out BlogGitHubStagingInfrastructure --require-approval never

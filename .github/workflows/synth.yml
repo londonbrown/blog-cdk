@@ -31,6 +31,7 @@ jobs:
 
       - name: Synthesize CDK Stack
         run: |
+          mkdir -p cdk.out
           cdk synth > cdk.out/template.json
 
       - name: Upload Synthesized Artifacts

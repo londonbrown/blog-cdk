@@ -30,7 +30,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
 
     blogPostsTable.addGlobalSecondaryIndex({
       indexName: "PublishedIndex",
-      partitionKey: { name: "published", type: AttributeType.BINARY },
+      partitionKey: { name: "published", type: AttributeType.STRING },
       sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING }
     })
 

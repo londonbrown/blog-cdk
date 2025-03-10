@@ -103,7 +103,8 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         code: lambda.Code.fromAsset(config.zipFile),
         environment: {
           BLOG_POSTS_TABLE: blogPostsTable.tableName,
-          BLOG_CONTENT_BUCKET: blogContentBucket.bucketName
+          BLOG_CONTENT_BUCKET: blogContentBucket.bucketName,
+          ALLOWED_ORIGIN: api.url // TODO replace with custom domain
         }
       })
       const apiResource = config.root.addResource(config.path)

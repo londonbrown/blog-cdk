@@ -19,7 +19,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set Environment Variable for S3 Bucket
-        run: echo "CDK_STAGING_BUCKET_NAME=${{ secrets.CDK_STAGING_BUCKET_NAME }}" >> $GITHUB_ENV
+        run: |
+          echo "CDK_STAGING_BUCKET_NAME=${{ secrets.CDK_STAGING_BUCKET_NAME }}" >> $GITHUB_ENV
+          echo "BLOG_CONTENT_BUCKET_NAME_PREFIX=${{ secrets.BLOG_CONTENT_BUCKET_NAME_PREFIX }}" >> $GITHUB_ENV
 
       - name: Fetch Latest Release from blog-lambdas
         id: get_release

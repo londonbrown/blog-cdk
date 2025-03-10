@@ -68,7 +68,11 @@ export class BlogAPIInfrastructure extends cdk.Stack {
     getPostRole.addToPolicy(
       new iam.PolicyStatement({
         actions: ["dynamodb:GetItem", "dynamodb:BatchGetItem", "dynamodb:Query"],
-        resources: [`${blogPostsTable.tableArn}/*`]
+        resources: [
+          blogPostsTable.tableArn,
+          `${blogPostsTable.tableArn}/index/CreatedAtIndex`,
+          `${blogPostsTable.tableArn}/index/PublishedIndex`
+        ]
       })
     )
 

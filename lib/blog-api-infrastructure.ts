@@ -104,7 +104,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         environment: {
           BLOG_POSTS_TABLE: blogPostsTable.tableName,
           BLOG_CONTENT_BUCKET: blogContentBucket.bucketName,
-          ALLOWED_ORIGIN: api.url // TODO replace with custom domain
+          ALLOWED_ORIGIN: "*" // TODO change
         }
       })
       const apiResource = config.root.addResource(config.path)

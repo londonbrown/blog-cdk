@@ -74,13 +74,6 @@ export class BlogAPIInfrastructure extends cdk.Stack {
 
     const lambdaConfigs = [
       {
-        name: "HelloWorld",
-        root: api.root,
-        path: "hello",
-        method: "GET",
-        zipFile: "lambdas/hello-world.zip"
-      },
-      {
         name: "GetPost",
         root: postRoot,
         path: "{id}",

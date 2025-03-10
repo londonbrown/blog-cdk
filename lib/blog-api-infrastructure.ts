@@ -1,8 +1,10 @@
 import * as cdk from "aws-cdk-lib"
+import { RemovalPolicy } from "aws-cdk-lib"
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as lambda from "aws-cdk-lib/aws-lambda"
+import * as s3 from "aws-cdk-lib/aws-s3"
 import { Construct } from "constructs"
 
 export enum BlogAPIStage {
@@ -43,6 +45,12 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       value: blogPostsTable.tableName
     })
 
+    const bucketNamePrefix = process.env.BLOG_CONTENT_BUCKET_NAME_PREFIX
+    const blogContentBucket = new s3.Bucket(this, `BlogContentBucket${stage}`, {
+      bucketName: bucketNamePrefix + stage.toLocaleLowerCase(),
+      removalPolicy: RemovalPolicy.RETAIN
+    })
+
     const api = new apigateway.RestApi(this, `BlogAPIGateway${stage}`, {
       restApiName: `Blog API (${stage})`,
       description: "API Gateway for the blog service"
@@ -80,7 +88,8 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         zipFile: "lambdas/get-post.zip",
         role: getPostRole,
         environment: {
-          BLOG_POSTS_TABLE: blogPostsTable.tableName
+          BLOG_POSTS_TABLE: blogPostsTable.tableName,
+          BLOG_CONTENT_BUCKET: blogContentBucket.bucketName
         }
       }
     ]

@@ -2,7 +2,6 @@ import * as cdk from "aws-cdk-lib"
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as lambda from "aws-cdk-lib/aws-lambda"
-
 import { Construct } from "constructs"
 
 export enum BlogAPIStage {

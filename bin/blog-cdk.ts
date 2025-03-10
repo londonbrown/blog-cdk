@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import * as cdk from "aws-cdk-lib"
+
 import { BlogAPIInfrastructure, BlogAPIStage } from "../lib/blog-api-infrastructure"
 import { BlogGitHubStagingInfrastructure } from "../lib/blog-git-hub-staging-infrastructure"
 

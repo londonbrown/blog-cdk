@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import * as cdk from "aws-cdk-lib"
-import { BlogGitHubStagingInfrastructure } from "../lib/blog-git-hub-staging-infrastructure"
 import { BlogAPIInfrastructure, BlogAPIStage } from "../lib/blog-api-infrastructure"
+import { BlogGitHubStagingInfrastructure } from "../lib/blog-git-hub-staging-infrastructure"
 
 const app = new cdk.App()
 new BlogGitHubStagingInfrastructure(app, "BlogGitHubStagingInfrastructure", {

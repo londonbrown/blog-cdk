@@ -2,5 +2,6 @@
   "semi": false,
   "trailingComma": "none",
   "singleQuote": false,
-  "printWidth": 100
+  "printWidth": 100,
+  "plugins": ["prettier-plugin-organize-imports"]
 }

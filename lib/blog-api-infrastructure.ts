@@ -56,12 +56,13 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         iam.ManagedPolicy.fromAwsManagedPolicyName("service-role/AWSLambdaBasicExecutionRole")
       ]
     })
-    // getPostRole.addToPolicy(
-    //   new iam.PolicyStatement({
-    //     actions: ["dynamodb:GetItem"],
-    //     resources: [blogPostsTable.tableArn]
-    //   })
-    // )
+
+    getPostRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ["dynamodb:GetItem", "dynamodb:BatchGetItem", "dynamodb:Query"],
+        resources: [blogPostsTable.tableArn]
+      })
+    )
 
     const lambdaConfigs = [
       {
@@ -77,10 +78,10 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         path: "{id}",
         method: "GET",
         zipFile: "lambdas/get-post.zip",
-        role: getPostRole
-        // environment: {
-        //   BLOG_POSTS_TABLE: blogPostsTable.tableName
-        // }
+        role: getPostRole,
+        environment: {
+          BLOG_POSTS_TABLE: blogPostsTable.tableName
+        }
       }
     ]
 
@@ -89,8 +90,8 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         role: config.role,
         runtime: lambda.Runtime.PROVIDED_AL2023,
         handler: "bootstrap",
-        code: lambda.Code.fromAsset(config.zipFile)
-        // environment: config.environment
+        code: lambda.Code.fromAsset(config.zipFile),
+        environment: config.environment
       })
       const apiResource = config.root.addResource(config.path)
       apiResource.addMethod(config.method, new apigateway.LambdaIntegration(lambdaFunction))

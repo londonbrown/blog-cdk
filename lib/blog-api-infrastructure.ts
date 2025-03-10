@@ -1,5 +1,6 @@
 import * as cdk from "aws-cdk-lib"
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as lambda from "aws-cdk-lib/aws-lambda"
 import { Construct } from "constructs"
@@ -18,23 +19,29 @@ export class BlogAPIInfrastructure extends cdk.Stack {
     super(scope, id, props)
     const stage = props.stage
 
-    // const blogPostsTable = new dynamodb.Table(this, `BlogPostsTable${stage}`, {
-    //   tableName: `BlogPosts${stage}`,
-    //   partitionKey: { name: "postId", type: dynamodb.AttributeType.STRING },
-    //   sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING },
-    //   billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-    //   removalPolicy: cdk.RemovalPolicy.RETAIN
-    // })
-    //
-    // blogPostsTable.addGlobalSecondaryIndex({
-    //   indexName: "PublishedIndex",
-    //   partitionKey: { name: "published", type: AttributeType.STRING },
-    //   sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING }
-    // })
-    //
-    // new cdk.CfnOutput(this, "BlogPostsTableName", {
-    //   value: blogPostsTable.tableName
-    // })
+    const blogPostsTable = new dynamodb.Table(this, `BlogPostsTable${stage}`, {
+      tableName: `BlogPosts${stage}`,
+      partitionKey: { name: "PK", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "SK", type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.RETAIN
+    })
+
+    blogPostsTable.addGlobalSecondaryIndex({
+      indexName: "CreatedAtIndex",
+      partitionKey: { name: "PK", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING }
+    })
+
+    blogPostsTable.addGlobalSecondaryIndex({
+      indexName: "PublishedIndex",
+      partitionKey: { name: "published", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING }
+    })
+
+    new cdk.CfnOutput(this, "BlogPostsTableName", {
+      value: blogPostsTable.tableName
+    })
 
     const api = new apigateway.RestApi(this, `BlogAPIGateway${stage}`, {
       restApiName: `Blog API (${stage})`,

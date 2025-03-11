@@ -1,4 +1,4 @@
-name: Deploy BlogAPIInfrastructureBeta Stack to AWS
+name: Deploy BlogAPIInfrastructure Stack to AWS
 
 on:
   workflow_run:
@@ -45,3 +45,42 @@ jobs:
       - name: Deploy API Stack to Beta
         run: |
           cdk deploy --app cdk.out BlogAPIInfrastructureBeta --require-approval never
+
+      - name: Run CDK Diff for Prod
+        run: cdk diff --app cdk.out BlogAPIInfrastructureProd | tee prod-diff.md
+
+      - name: Attach CDK Diff to Prod Approval Request
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const diff = fs.readFileSync('prod-diff.md', 'utf8');
+            const runId = process.env.GITHUB_RUN_ID;
+            const repo = process.env.GITHUB_REPOSITORY;
+            const workflowUrl = `https://github.com/${repo}/actions/runs/${runId}`;
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "🚀 Approve Production Deployment",
+              body: `### CDK Diff for Production Deployment:\n\`\`\`\n${diff}\n\`\`\`\n\n[View Workflow & Approve Here](${workflowUrl})`,
+              labels: ["approval-required"]
+            });
+
+  approve-prod:
+    runs-on: ubuntu-latest
+    needs: deploy-beta
+    environment: prod
+    steps:
+      - name: Wait for manual approval in GitHub UI...
+
+# Enable prod after confirming approval workflow
+#  deploy-prod:
+#    runs-on: ubuntu-latest
+#    needs: approve-prod
+#    environment: prod
+#    steps:
+#      - name: Deploy API Stack to Prod
+#        run: |
+#          cdk deploy --app cdk.out BlogAPIInfrastructureProd --require-approval never

@@ -35,7 +35,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         : `blog.${hostedZoneDomainName}`
     const apiBlogDomainName = `api.${blogDomainName}`
 
-    const hostedZone = route53.HostedZone.fromLookup(this, "ChaimCodesHostedZone", {
+    const hostedZone = route53.HostedZone.fromLookup(this, "BlogRootDomainHostedZone", {
       domainName: hostedZoneDomainName
     })
 

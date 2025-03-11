@@ -73,7 +73,8 @@ jobs:
     needs: deploy-beta
     environment: prod
     steps:
-      - name: Wait for manual approval in GitHub UI...
+      - name: Wait for manual approval
+        run: echo "Waiting for manual approval in GitHub UI..."
 
 # Enable prod after confirming approval workflow
 #  deploy-prod:

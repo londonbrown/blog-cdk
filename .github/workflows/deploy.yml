@@ -97,20 +97,36 @@ jobs:
               labels: ["approval-required"]
             });
 
-  approve-prod:
+  deploy-prod:
     runs-on: ubuntu-latest
     needs: create-approval
     environment: prod
-    steps:
-      - name: Wait for manual approval
-        run: echo "Waiting for manual approval in GitHub UI..."
+    permissions:
+      id-token: write
+      contents: read
 
-# Enable prod after confirming approval workflow
-#  deploy-prod:
-#    runs-on: ubuntu-latest
-#    needs: approve-prod
-#    environment: prod
-#    steps:
-#      - name: Deploy API Stack to Prod
-#        run: |
-#          cdk deploy --app cdk.out BlogAPIInfrastructureProd --require-approval never
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/BlogCDKGitHubOIDCDeployRole
+          aws-region: us-east-1
+
+      - name: Set Commit Hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Download Synthesized Artifacts from S3
+        run: |
+          aws s3 cp --recursive s3://${{ secrets.CDK_STAGING_BUCKET_NAME }}/cdk-out/$COMMIT_HASH/ cdk.out/
+
+      - name: Install CDK
+        run: |
+          npm install -g aws-cdk
+          npm ci
+
+      - name: Deploy API Stack to Prod
+        run: |
+          cdk deploy --app cdk.out BlogAPIInfrastructureBeta --require-approval never

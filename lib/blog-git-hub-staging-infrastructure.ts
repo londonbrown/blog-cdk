@@ -22,8 +22,7 @@ export class BlogGitHubStagingInfrastructure extends cdk.Stack {
             "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
           },
           StringLike: {
-            "token.actions.githubusercontent.com:sub":
-              "repo:londonbrown/blog-cdk:ref:refs/heads/main"
+            "token.actions.githubusercontent.com:sub": "repo:londonbrown/blog-cdk:*"
           }
         },
         "sts:AssumeRoleWithWebIdentity"

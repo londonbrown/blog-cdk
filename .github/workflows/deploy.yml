@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-beta:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -37,6 +37,9 @@ jobs:
         run: |
           npm install -g aws-cdk
           npm ci
+
+      - name: Run CDK Diff for Beta
+        run: cdk diff --app cdk.out BlogAPIInfrastructureBeta
 
       - name: Deploy API Stack to Beta
         run: |

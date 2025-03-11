@@ -53,6 +53,21 @@ jobs:
       contents: read
 
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/BlogCDKGitHubOIDCDeployRole
+          aws-region: us-east-1
+
+      - name: Download Synthesized Artifacts from S3
+        run: |
+          aws s3 cp --recursive s3://${{ secrets.CDK_STAGING_BUCKET_NAME }}/cdk-out/$COMMIT_HASH/ cdk.out/
+
+      - name: Install CDK
+        run: |
+          npm install -g aws-cdk
+          npm ci
+
       - name: Run CDK Diff for Prod
         run: cdk diff --app cdk.out BlogAPIInfrastructureProd | tee prod-diff.md
 

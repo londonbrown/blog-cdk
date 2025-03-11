@@ -129,4 +129,4 @@ jobs:
 
       - name: Deploy API Stack to Prod
         run: |
-          cdk deploy --app cdk.out BlogAPIInfrastructureBeta --require-approval never
+          cdk deploy --app cdk.out BlogAPIInfrastructureProd --require-approval never

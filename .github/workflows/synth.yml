@@ -23,8 +23,8 @@ jobs:
           echo "CDK_STAGING_BUCKET_NAME=${{ secrets.CDK_STAGING_BUCKET_NAME }}" >> $GITHUB_ENV
           echo "BLOG_CONTENT_BUCKET_NAME_PREFIX=${{ secrets.BLOG_CONTENT_BUCKET_NAME_PREFIX }}" >> $GITHUB_ENV
           echo "ROOT_DOMAIN_NAME=${{ secrets.ROOT_DOMAIN_NAME }}" >> $GITHUB_ENV
-          echo "AWS_DEFAULT_ACCOUNT=${{ secrets.AWS_ACCOUNT_ID }}" >> $GITHUB_ENV
-          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
+          echo "CDK_DEFAULT_ACCOUNT=${{ secrets.AWS_ACCOUNT_ID }}" >> $GITHUB_ENV
+          echo "CDK_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
 
       - name: Fetch Latest Release from blog-lambdas
         id: get_release

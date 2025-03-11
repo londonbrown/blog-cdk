@@ -6,7 +6,6 @@ import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as lambda from "aws-cdk-lib/aws-lambda"
 import * as route53 from "aws-cdk-lib/aws-route53"
-import * as route53Targets from "aws-cdk-lib/aws-route53-targets"
 import * as s3 from "aws-cdk-lib/aws-s3"
 import { Construct } from "constructs"
 

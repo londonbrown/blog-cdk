@@ -1,9 +1,12 @@
 import * as cdk from "aws-cdk-lib"
 import { RemovalPolicy } from "aws-cdk-lib"
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
+import * as acm from "aws-cdk-lib/aws-certificatemanager"
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as lambda from "aws-cdk-lib/aws-lambda"
+import * as route53 from "aws-cdk-lib/aws-route53"
+import * as route53Targets from "aws-cdk-lib/aws-route53-targets"
 import * as s3 from "aws-cdk-lib/aws-s3"
 import { Construct } from "constructs"
 
@@ -20,6 +23,27 @@ export class BlogAPIInfrastructure extends cdk.Stack {
   constructor(scope: Construct, id: string, props: BlogAPIInfrastructureProps) {
     super(scope, id, props)
     const stage = props.stage
+
+    if (!process.env.ROOT_DOMAIN_NAME) {
+      throw Error("ROOT_DOMAIN_NAME not set")
+    }
+
+    const hostedZoneDomainName = process.env.ROOT_DOMAIN_NAME
+    const blogDomainName =
+      stage != BlogAPIStage.PROD
+        ? `${stage}.blog.${hostedZoneDomainName}`
+        : `blog.${hostedZoneDomainName}`
+    const apiBlogDomainName = `api.${blogDomainName}`
+
+    const hostedZone = route53.HostedZone.fromLookup(this, "ChaimCodesHostedZone", {
+      domainName: hostedZoneDomainName
+    })
+
+    const certificate = new acm.Certificate(this, `BlogCertificate${stage}`, {
+      domainName: blogDomainName,
+      subjectAlternativeNames: [apiBlogDomainName],
+      validation: acm.CertificateValidation.fromDns(hostedZone)
+    })
 
     const blogPostsTable = new dynamodb.Table(this, `BlogPostsTable${stage}`, {
       tableName: `BlogPosts${stage}`,

@@ -47,6 +47,10 @@ jobs:
           cdk deploy --app cdk.out BlogAPIInfrastructureBeta --require-approval never
 
   create-approval:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
     steps:
       - name: Run CDK Diff for Prod
         run: cdk diff --app cdk.out BlogAPIInfrastructureProd | tee prod-diff.md

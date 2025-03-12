@@ -92,13 +92,31 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       }
     })
 
-    new cognito.UserPoolClient(this, `BlogUserPoolClient${stage}`, {
+    const userPoolClient = new cognito.UserPoolClient(this, `BlogUserPoolClient${stage}`, {
       userPool,
       authFlows: { userPassword: true, adminUserPassword: true }
     })
 
     const identityPool = new cognito.CfnIdentityPool(this, `BlogIdentityPool${stage}`, {
-      allowUnauthenticatedIdentities: true
+      allowUnauthenticatedIdentities: true,
+      cognitoIdentityProviders: [
+        {
+          clientId: userPoolClient.userPoolClientId,
+          providerName: userPool.userPoolProviderName
+        }
+      ]
+    })
+
+    const authorRole = new iam.Role(this, `AuthorIAMRole${stage}`, {
+      roleName: `AuthorIAMRole${stage}`,
+      assumedBy: new iam.FederatedPrincipal(
+        "cognito-identity.amazonaws.com",
+        {
+          StringEquals: { "cognito-identity.amazonaws.com:aud": identityPool.ref },
+          "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "unauthenticated" }
+        },
+        "sts:AssumeRoleWithWebIdentity"
+      )
     })
 
     const guestRole = new iam.Role(this, `GuestIamRole${stage}`, {
@@ -116,6 +134,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
     new cognito.CfnIdentityPoolRoleAttachment(this, `IdentityPoolRoleAttachment${stage}`, {
       identityPoolId: identityPool.ref,
       roles: {
+        authenticated: authorRole.roleArn,
         unauthenticated: guestRole.roleArn
       }
     })
@@ -152,12 +171,14 @@ export class BlogAPIInfrastructure extends cdk.Stack {
 
     const postRoot = api.root.addResource("post")
 
-    const getPostRole = new iam.Role(this, `GetPostLambdaRole${stage}`, {
+    const lambdaRoleProps = {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName("service-role/AWSLambdaBasicExecutionRole")
       ]
-    })
+    }
+
+    const getPostRole = new iam.Role(this, `GetPostLambdaRole${stage}`, lambdaRoleProps)
 
     getPostRole.addToPolicy(
       new iam.PolicyStatement({
@@ -167,6 +188,15 @@ export class BlogAPIInfrastructure extends cdk.Stack {
           `${blogPostsTable.tableArn}/index/CreatedAtIndex`,
           `${blogPostsTable.tableArn}/index/PublishedIndex`
         ]
+      })
+    )
+
+    const createPostRole = new iam.Role(this, `CreatePostLambdaRole${stage}`, lambdaRoleProps)
+
+    createPostRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ["dynamodb:PutItem"],
+        resources: [blogPostsTable.tableArn]
       })
     )
 
@@ -190,7 +220,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         methodOptions: {
           ...guestApiMethodOptions
         },
-        guestAccess: true
+        authRole: guestRole
       },
       {
         name: "GetPosts",
@@ -202,7 +232,18 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         methodOptions: {
           ...guestApiMethodOptions
         },
-        guestAccess: true
+        authRole: guestRole
+      },
+      {
+        name: "CreatePost",
+        root: postRoot,
+        method: "POST",
+        zipFile: "lambdas/create-post.zip",
+        role: createPostRole,
+        methodOptions: {
+          ...cognitoApiMethodOptions
+        },
+        authRole: authorRole
       }
     ]
 
@@ -217,18 +258,16 @@ export class BlogAPIInfrastructure extends cdk.Stack {
           BLOG_CONTENT_BUCKET: blogContentBucket.bucketName
         }
       })
-      const apiResource = config.root.addResource(config.path)
+      const apiResource = config.path ? config.root.addResource(config.path) : config.root
       const lambdaIntegration = new apigateway.LambdaIntegration(lambdaFunction)
       const method = apiResource.addMethod(config.method, lambdaIntegration, config.methodOptions)
 
-      if (config.guestAccess) {
-        guestRole.addToPolicy(
-          new iam.PolicyStatement({
-            actions: ["execute-api:Invoke"],
-            resources: [method.methodArn]
-          })
-        )
-      }
+      config.authRole.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ["execute-api:Invoke"],
+          resources: [method.methodArn]
+        })
+      )
     })
   }
 }

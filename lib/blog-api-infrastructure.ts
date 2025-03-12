@@ -77,6 +77,26 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       removalPolicy: RemovalPolicy.RETAIN
     })
 
+    const userPool = new cognito.UserPool(this, `BlogUserPool${stage}`, {
+      userPoolName: `BlogUserPool${stage}`,
+      selfSignUpEnabled: true,
+      signInAliases: {
+        email: true,
+        username: true
+      },
+      autoVerify: {
+        email: true
+      },
+      standardAttributes: {
+        email: { required: true, mutable: false }
+      }
+    })
+
+    new cognito.UserPoolClient(this, `BlogUserPoolClient${stage}`, {
+      userPool,
+      authFlows: { userPassword: true, adminUserPassword: true }
+    })
+
     const identityPool = new cognito.CfnIdentityPool(this, `BlogIdentityPool${stage}`, {
       allowUnauthenticatedIdentities: true
     })
@@ -122,6 +142,14 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       target: route53.RecordTarget.fromAlias(new route53_targets.ApiGatewayDomain(customDomain))
     })
 
+    const apiAuthorizer = new apigateway.CognitoUserPoolsAuthorizer(
+      this,
+      `BlogAPIAuthorizer${stage}`,
+      {
+        cognitoUserPools: [userPool]
+      }
+    )
+
     const postRoot = api.root.addResource("post")
 
     const getPostRole = new iam.Role(this, `GetPostLambdaRole${stage}`, {
@@ -142,6 +170,15 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       })
     )
 
+    const guestApiMethodOptions: apigateway.MethodOptions = {
+      authorizationType: apigateway.AuthorizationType.IAM
+    }
+
+    const cognitoApiMethodOptions: apigateway.MethodOptions = {
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizer: apiAuthorizer
+    }
+
     const lambdaConfigs = [
       {
         name: "GetPost",
@@ -150,6 +187,9 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         method: "GET",
         zipFile: "lambdas/get-post.zip",
         role: getPostRole,
+        methodOptions: {
+          ...guestApiMethodOptions
+        },
         guestAccess: true
       },
       {
@@ -159,6 +199,9 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         method: "GET",
         zipFile: "lambdas/get-posts.zip",
         role: getPostRole,
+        methodOptions: {
+          ...guestApiMethodOptions
+        },
         guestAccess: true
       }
     ]
@@ -176,9 +219,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       })
       const apiResource = config.root.addResource(config.path)
       const lambdaIntegration = new apigateway.LambdaIntegration(lambdaFunction)
-      const method = apiResource.addMethod(config.method, lambdaIntegration, {
-        authorizationType: config.guestAccess ? apigateway.AuthorizationType.IAM : undefined
-      })
+      const method = apiResource.addMethod(config.method, lambdaIntegration, config.methodOptions)
 
       if (config.guestAccess) {
         guestRole.addToPolicy(

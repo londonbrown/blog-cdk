@@ -118,7 +118,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
 
     new route53.ARecord(this, `BlogAPIAliasRecord${stage}`, {
       zone: hostedZone,
-      region: apiBlogDomainName,
+      recordName: apiBlogDomainName,
       target: route53.RecordTarget.fromAlias(new route53_targets.ApiGatewayDomain(customDomain))
     })
 

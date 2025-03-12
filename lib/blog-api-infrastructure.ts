@@ -30,12 +30,11 @@ export class BlogAPIInfrastructure extends cdk.Stack {
     }
 
     const hostedZoneDomainName = process.env.ROOT_DOMAIN_NAME
-    const blogDomainName = (
+    const blogDomainName =
       stage != BlogAPIStage.PROD
         ? `${stage}.blog.${hostedZoneDomainName}`
         : `blog.${hostedZoneDomainName}`
-    ).toLowerCase()
-    const apiBlogDomainName = `api.${blogDomainName}`.toLowerCase()
+    const apiBlogDomainName = `api.${blogDomainName}`
 
     const hostedZone = route53.HostedZone.fromLookup(this, "BlogRootDomainHostedZone", {
       domainName: hostedZoneDomainName

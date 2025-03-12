@@ -2,6 +2,8 @@ import * as cdk from "aws-cdk-lib"
 import { RemovalPolicy } from "aws-cdk-lib"
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import * as acm from "aws-cdk-lib/aws-certificatemanager"
+import * as cloudfront from "aws-cdk-lib/aws-cloudfront"
+import * as origins from "aws-cdk-lib/aws-cloudfront-origins"
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as lambda from "aws-cdk-lib/aws-lambda"
@@ -77,6 +79,29 @@ export class BlogAPIInfrastructure extends cdk.Stack {
     const api = new apigateway.RestApi(this, `BlogAPIGateway${stage}`, {
       restApiName: `Blog API (${stage})`,
       description: "API Gateway for the blog service"
+    })
+
+    const apiCloudFront = new cloudfront.Distribution(this, `BlogApiGatewayProxy${stage}`, {
+      defaultBehavior: {
+        origin: new origins.HttpOrigin(
+          api.restApiId + ".execute-api" + this.region + ".amazonaws.com",
+          {
+            originPath: "/prod"
+          }
+        ),
+        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+        originRequestPolicy: new cloudfront.OriginRequestPolicy(
+          this,
+          `APIGatewayRequestPolicy${stage}`,
+          {
+            headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList("Authorization"),
+            queryStringBehavior: cloudfront.OriginRequestQueryStringBehavior.all(),
+            cookieBehavior: cloudfront.OriginRequestCookieBehavior.none()
+          }
+        )
+      },
+      domainNames: [apiBlogDomainName],
+      certificate: certificate
     })
 
     const postRoot = api.root.addResource("post")

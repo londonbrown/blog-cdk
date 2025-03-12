@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib"
 import { RemovalPolicy } from "aws-cdk-lib"
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import * as acm from "aws-cdk-lib/aws-certificatemanager"
+import * as cognito from "aws-cdk-lib/aws-cognito"
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as lambda from "aws-cdk-lib/aws-lambda"
@@ -74,6 +75,29 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       removalPolicy: RemovalPolicy.RETAIN
     })
 
+    const identityPool = new cognito.CfnIdentityPool(this, `BlogIdentityPool${stage}`, {
+      allowUnauthenticatedIdentities: true
+    })
+
+    const guestRole = new iam.Role(this, `GuestIamRole${stage}`, {
+      roleName: `GuestIamRole${stage}`,
+      assumedBy: new iam.FederatedPrincipal(
+        "cognito-identity.amazonaws.com",
+        {
+          StringEquals: { "cognito-identity.amazonaws.com:aud": identityPool.ref },
+          "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "unauthenticated" }
+        },
+        "sts:AssumeRoleWithWebIdentity"
+      )
+    })
+
+    new cognito.CfnIdentityPoolRoleAttachment(this, `IdentityPoolRoleAttachment${stage}`, {
+      identityPoolId: identityPool.ref,
+      roles: {
+        unauthenticated: guestRole.roleArn
+      }
+    })
+
     const api = new apigateway.RestApi(this, `BlogAPIGateway${stage}`, {
       restApiName: `Blog API (${stage})`,
       description: "API Gateway for the blog service"
@@ -106,7 +130,8 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         path: "{id}",
         method: "GET",
         zipFile: "lambdas/get-post.zip",
-        role: getPostRole
+        role: getPostRole,
+        guestAccess: true
       },
       {
         name: "GetPosts",
@@ -114,7 +139,8 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         path: "posts",
         method: "GET",
         zipFile: "lambdas/get-posts.zip",
-        role: getPostRole
+        role: getPostRole,
+        guestAccess: true
       }
     ]
 
@@ -130,7 +156,19 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         }
       })
       const apiResource = config.root.addResource(config.path)
-      apiResource.addMethod(config.method, new apigateway.LambdaIntegration(lambdaFunction))
+      const lambdaIntegration = new apigateway.LambdaIntegration(lambdaFunction)
+      const method = apiResource.addMethod(config.method, lambdaIntegration, {
+        authorizationType: apigateway.AuthorizationType.COGNITO
+      })
+
+      if (config.guestAccess) {
+        guestRole.addToPolicy(
+          new iam.PolicyStatement({
+            actions: ["execute-api:Invoke"],
+            resources: [method.methodArn]
+          })
+        )
+      }
     })
   }
 }

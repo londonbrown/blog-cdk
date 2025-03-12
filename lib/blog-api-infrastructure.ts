@@ -7,6 +7,7 @@ import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as lambda from "aws-cdk-lib/aws-lambda"
 import * as route53 from "aws-cdk-lib/aws-route53"
+import * as route53_targets from "aws-cdk-lib/aws-route53-targets"
 import * as s3 from "aws-cdk-lib/aws-s3"
 import { Construct } from "constructs"
 
@@ -101,6 +102,23 @@ export class BlogAPIInfrastructure extends cdk.Stack {
     const api = new apigateway.RestApi(this, `BlogAPIGateway${stage}`, {
       restApiName: `Blog API (${stage})`,
       description: "API Gateway for the blog service"
+    })
+
+    const customDomain = new apigateway.DomainName(this, `BlogAPIDomain${stage}`, {
+      domainName: apiBlogDomainName,
+      certificate: certificate
+    })
+
+    new apigateway.BasePathMapping(this, `BlogAPIBasePathMapping${stage}`, {
+      domainName: customDomain,
+      restApi: api,
+      stage: api.deploymentStage
+    })
+
+    new route53.ARecord(this, `BlogAPIAliasRecord${stage}`, {
+      zone: hostedZone,
+      region: apiBlogDomainName,
+      target: route53.RecordTarget.fromAlias(new route53_targets.ApiGatewayDomain(customDomain))
     })
 
     const postRoot = api.root.addResource("post")

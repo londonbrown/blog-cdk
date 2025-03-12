@@ -158,7 +158,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       const apiResource = config.root.addResource(config.path)
       const lambdaIntegration = new apigateway.LambdaIntegration(lambdaFunction)
       const method = apiResource.addMethod(config.method, lambdaIntegration, {
-        authorizationType: apigateway.AuthorizationType.COGNITO
+        authorizationType: config.guestAccess ? apigateway.AuthorizationType.IAM : undefined
       })
 
       if (config.guestAccess) {

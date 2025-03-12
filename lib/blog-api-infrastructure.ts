@@ -113,7 +113,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         "cognito-identity.amazonaws.com",
         {
           StringEquals: { "cognito-identity.amazonaws.com:aud": identityPool.ref },
-          "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "unauthenticated" }
+          "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "authenticated" }
         },
         "sts:AssumeRoleWithWebIdentity"
       )

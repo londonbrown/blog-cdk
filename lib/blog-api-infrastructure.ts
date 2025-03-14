@@ -195,7 +195,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
 
     createPostRole.addToPolicy(
       new iam.PolicyStatement({
-        actions: ["dynamodb:PutItem"],
+        actions: ["dynamodb:GetItem", "dynamodb:PutItem"],
         resources: [blogPostsTable.tableArn]
       })
     )

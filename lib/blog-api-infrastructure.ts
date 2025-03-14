@@ -267,7 +267,6 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         name: "DeletePost",
         root: postRoot,
         method: "DELETE",
-        path: "{id}",
         zipFile: "lambdas/delete-post.zip",
         role: deletePostRole,
         methodOptions: {

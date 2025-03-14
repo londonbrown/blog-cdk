@@ -206,7 +206,10 @@ export class BlogAPIInfrastructure extends cdk.Stack {
 
     const cognitoApiMethodOptions: apigateway.MethodOptions = {
       authorizationType: apigateway.AuthorizationType.COGNITO,
-      authorizer: apiAuthorizer
+      authorizer: apiAuthorizer,
+      requestParameters: {
+        "method.request.header.Authorization": true
+      }
     }
 
     const lambdaConfigs = [

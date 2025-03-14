@@ -92,6 +92,12 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       }
     })
 
+    const adminGroup = new cognito.UserPoolGroup(this, `BlogUserPoolAdminGroup${stage}`, {
+      userPool: userPool,
+      groupName: "Admin",
+      description: "Administrators with full API access"
+    })
+
     const userPoolClient = new cognito.UserPoolClient(this, `BlogUserPoolClient${stage}`, {
       userPool,
       authFlows: { userPassword: true, adminUserPassword: true }

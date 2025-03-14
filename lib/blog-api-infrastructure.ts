@@ -206,6 +206,15 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       })
     )
 
+    const deletePostRole = new iam.Role(this, `DeletePostLambdaRole${stage}`, lambdaRoleProps)
+
+    deletePostRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ["dynamodb:GetItem", "dynamodb:DeleteItem"],
+        resources: [blogPostsTable.tableArn]
+      })
+    )
+
     const guestApiMethodOptions: apigateway.MethodOptions = {
       authorizationType: apigateway.AuthorizationType.IAM
     }
@@ -249,6 +258,17 @@ export class BlogAPIInfrastructure extends cdk.Stack {
         method: "POST",
         zipFile: "lambdas/create-post.zip",
         role: createPostRole,
+        methodOptions: {
+          ...cognitoApiMethodOptions
+        },
+        authRole: authorRole
+      },
+      {
+        name: "DeletePost",
+        root: postRoot,
+        method: "DELETE",
+        zipFile: "lambdas/delete-post.zip",
+        role: deletePostRole,
         methodOptions: {
           ...cognitoApiMethodOptions
         },

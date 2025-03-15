@@ -24,7 +24,7 @@ export function setupApiGateway(
   authorRole: iam.Role
 ): apigateway.RestApi {
   const api = new apigateway.RestApi(scope, `BlogAPIGateway${stage}`, {
-    restApiName: `Blog API ($stage)`,
+    restApiName: `Blog API (${stage})`,
     description: "API Gateway for the blog service"
   })
 

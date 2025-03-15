@@ -79,6 +79,7 @@ export function setupCognito(scope: Construct, stage: string) {
   new cognito.CfnIdentityPoolRoleAttachment(scope, `IdentityPoolRoleAttachment${stage}`, {
     identityPoolId: identityPool.ref,
     roles: {
+      admin: adminRole.roleArn,
       authenticated: authorRole.roleArn,
       unauthenticated: guestRole.roleArn
     },
@@ -101,13 +102,5 @@ export function setupCognito(scope: Construct, stage: string) {
     }
   })
 
-  const apiAuthorizer = new apigateway.CognitoUserPoolsAuthorizer(
-    scope,
-    `BlogAPIAuthorizer${stage}`,
-    {
-      cognitoUserPools: [userPool]
-    }
-  )
-
-  return { apiAuthorizer, authorRole, guestRole, adminRole }
+  return { authorRole, guestRole, adminRole }
 }

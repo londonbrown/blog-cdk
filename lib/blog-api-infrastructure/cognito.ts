@@ -79,6 +79,7 @@ export function setupCognito(scope: Construct, stage: string) {
   new cognito.CfnIdentityPoolRoleAttachment(scope, `IdentityPoolRoleAttachment${stage}`, {
     identityPoolId: identityPool.ref,
     roles: {
+      admin: adminRole.roleArn,
       authenticated: authorRole.roleArn,
       unauthenticated: guestRole.roleArn
     },

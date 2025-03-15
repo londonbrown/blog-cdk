@@ -63,7 +63,6 @@ export function setupApiGateway(
     "DELETE",
     new apigateway.LambdaIntegration(deletePostLambda),
     {
-      authorizationType: apigateway.AuthorizationType.COGNITO,
       authorizer: userPoolAuthorizer
     }
   )
@@ -72,7 +71,6 @@ export function setupApiGateway(
     "POST",
     new apigateway.LambdaIntegration(createPostLambda),
     {
-      authorizationType: apigateway.AuthorizationType.COGNITO,
       authorizer: userPoolAuthorizer
     }
   )

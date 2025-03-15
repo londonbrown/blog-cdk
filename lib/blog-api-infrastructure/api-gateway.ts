@@ -1,5 +1,7 @@
+import * as cdk from "aws-cdk-lib"
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import * as acm from "aws-cdk-lib/aws-certificatemanager"
+import * as cognito from "aws-cdk-lib/aws-cognito"
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as route53 from "aws-cdk-lib/aws-route53"
@@ -7,6 +9,7 @@ import * as route53_targets from "aws-cdk-lib/aws-route53-targets"
 import * as s3 from "aws-cdk-lib/aws-s3"
 import { Construct } from "constructs"
 
+import { createCognitoAuthorizerLambda } from "./lambdas/cognito-authorizer"
 import { createCreatePostLambda } from "./lambdas/create-post"
 import { createDeletePostLambda } from "./lambdas/delete-post"
 import { createGetPostLambda } from "./lambdas/get-post"
@@ -18,7 +21,7 @@ export function setupApiGateway(
   hostedZone: route53.IHostedZone,
   apiBlogDomainName: string,
   primaryCertificate: acm.Certificate,
-  userPoolAuthorizer: apigateway.CognitoUserPoolsAuthorizer,
+  userPool: cognito.UserPool,
   bucket: s3.Bucket,
   table: dynamodb.Table,
   guestRole: iam.Role,
@@ -47,6 +50,14 @@ export function setupApiGateway(
     target: route53.RecordTarget.fromAlias(new route53_targets.ApiGatewayDomain(customDomain))
   })
 
+  const authorizerLambda = createCognitoAuthorizerLambda(scope, stage, userPool)
+
+  const apiAuthorizer = new apigateway.RequestAuthorizer(scope, `APIAuthorizer${stage}`, {
+    handler: authorizerLambda,
+    identitySources: [apigateway.IdentitySource.header("Authorization")],
+    resultsCacheTtl: cdk.Duration.minutes(5)
+  })
+
   const postRoot = api.root.addResource("post")
   const postById = postRoot.addResource("{id}")
   const posts = api.root.addResource("posts")
@@ -63,10 +74,8 @@ export function setupApiGateway(
     "DELETE",
     new apigateway.LambdaIntegration(deletePostLambda),
     {
-      authorizer: userPoolAuthorizer,
-      requestParameters: {
-        "method.request.header.Authorization": true
-      }
+      authorizationType: apigateway.AuthorizationType.CUSTOM,
+      authorizer: apiAuthorizer
     }
   )
 
@@ -74,10 +83,8 @@ export function setupApiGateway(
     "POST",
     new apigateway.LambdaIntegration(createPostLambda),
     {
-      authorizer: userPoolAuthorizer,
-      requestParameters: {
-        "method.request.header.Authorization": true
-      }
+      authorizationType: apigateway.AuthorizationType.CUSTOM,
+      authorizer: apiAuthorizer
     }
   )
 

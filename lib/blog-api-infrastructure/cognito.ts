@@ -101,13 +101,5 @@ export function setupCognito(scope: Construct, stage: string) {
     }
   })
 
-  const apiAuthorizer = new apigateway.CognitoUserPoolsAuthorizer(
-    scope,
-    `BlogAPIAuthorizer${stage}`,
-    {
-      cognitoUserPools: [userPool]
-    }
-  )
-
-  return { apiAuthorizer, authorRole, guestRole, adminRole }
+  return { authorRole, guestRole, adminRole, userPool }
 }

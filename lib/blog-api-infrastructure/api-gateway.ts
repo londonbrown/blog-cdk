@@ -50,7 +50,7 @@ export function setupApiGateway(
     target: route53.RecordTarget.fromAlias(new route53_targets.ApiGatewayDomain(customDomain))
   })
 
-  const authorizerLambda = createCognitoAuthorizerLambda(scope, stage, userPool)
+  const authorizerLambda = createCognitoAuthorizerLambda(scope, stage, userPool, api)
 
   const apiAuthorizer = new apigateway.RequestAuthorizer(scope, `APIAuthorizer${stage}`, {
     handler: authorizerLambda,

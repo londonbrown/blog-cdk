@@ -40,6 +40,18 @@ export function setupCognito(scope: Construct, stage: string) {
     ]
   })
 
+  const adminRole = new iam.Role(scope, `AdminIAMRole${stage}`, {
+    roleName: `AdminIAMRole${stage}`,
+    assumedBy: new iam.FederatedPrincipal(
+      "cognito-identity.amazonaws.com",
+      {
+        StringEquals: { "cognito-identity.amazonaws.com:aud": identityPool.ref },
+        "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "authenticated" }
+      },
+      "sts:AssumeRoleWithWebIdentity"
+    )
+  })
+
   const authorRole = new iam.Role(scope, `AuthorIAMRole${stage}`, {
     roleName: `AuthorIAMRole${stage}`,
     assumedBy: new iam.FederatedPrincipal(
@@ -69,6 +81,23 @@ export function setupCognito(scope: Construct, stage: string) {
     roles: {
       authenticated: authorRole.roleArn,
       unauthenticated: guestRole.roleArn
+    },
+    roleMappings: {
+      admins: {
+        type: "Rules",
+        ambiguousRoleResolution: "AuthenticatedRole",
+        identityProvider: `${userPool.userPoolProviderName}:${userPoolClient.userPoolClientId}`,
+        rulesConfiguration: {
+          rules: [
+            {
+              claim: "cognito:groups",
+              matchType: "Contains",
+              value: adminGroup.groupName,
+              roleArn: adminRole.roleArn
+            }
+          ]
+        }
+      }
     }
   })
 
@@ -80,5 +109,5 @@ export function setupCognito(scope: Construct, stage: string) {
     }
   )
 
-  return { apiAuthorizer, authorRole, guestRole }
+  return { apiAuthorizer, authorRole, guestRole, adminRole }
 }

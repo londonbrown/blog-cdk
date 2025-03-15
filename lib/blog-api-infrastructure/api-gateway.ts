@@ -8,6 +8,7 @@ import * as s3 from "aws-cdk-lib/aws-s3"
 import { Construct } from "constructs"
 
 import { createCreatePostLambda } from "./lambdas/create-post"
+import { createDeletePostLambda } from "./lambdas/delete-post"
 import { createGetPostLambda } from "./lambdas/get-post"
 import { createGetPostsLambda } from "./lambdas/get-posts"
 
@@ -21,7 +22,8 @@ export function setupApiGateway(
   bucket: s3.Bucket,
   table: dynamodb.Table,
   guestRole: iam.Role,
-  authorRole: iam.Role
+  authorRole: iam.Role,
+  adminRole: iam.Role
 ): apigateway.RestApi {
   const api = new apigateway.RestApi(scope, `BlogAPIGateway${stage}`, {
     restApiName: `Blog API (${stage})`,
@@ -52,10 +54,19 @@ export function setupApiGateway(
   const getPostLambda = createGetPostLambda(scope, stage, table, bucket)
   const getPostsLambda = createGetPostsLambda(scope, stage, table)
   const createPostLambda = createCreatePostLambda(scope, stage, table, bucket)
+  const deletePostLambda = createDeletePostLambda(scope, stage, table, bucket)
 
   const getPostMethod = postById.addMethod("GET", new apigateway.LambdaIntegration(getPostLambda), {
     authorizationType: apigateway.AuthorizationType.IAM
   })
+  const deletePostMethod = postById.addMethod(
+    "DELETE",
+    new apigateway.LambdaIntegration(deletePostLambda),
+    {
+      authorizationType: apigateway.AuthorizationType.IAM,
+      authorizer: userPoolAuthorizer
+    }
+  )
 
   const createPostMethod = postRoot.addMethod(
     "POST",
@@ -81,6 +92,13 @@ export function setupApiGateway(
     new iam.PolicyStatement({
       actions: ["execute-api:Invoke"],
       resources: [createPostMethod.methodArn]
+    })
+  )
+
+  adminRole.addToPolicy(
+    new iam.PolicyStatement({
+      actions: ["execute-api:Invoke"],
+      resources: [deletePostMethod.methodArn]
     })
   )
 

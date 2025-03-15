@@ -18,6 +18,7 @@ export function setupApiGateway(
   hostedZone: route53.IHostedZone,
   apiBlogDomainName: string,
   primaryCertificate: acm.Certificate,
+  userPoolAuthorizer: apigateway.CognitoUserPoolsAuthorizer,
   bucket: s3.Bucket,
   table: dynamodb.Table,
   guestRole: iam.Role,
@@ -62,7 +63,8 @@ export function setupApiGateway(
     "DELETE",
     new apigateway.LambdaIntegration(deletePostLambda),
     {
-      authorizationType: apigateway.AuthorizationType.IAM
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizer: userPoolAuthorizer
     }
   )
 
@@ -70,7 +72,8 @@ export function setupApiGateway(
     "POST",
     new apigateway.LambdaIntegration(createPostLambda),
     {
-      authorizationType: apigateway.AuthorizationType.IAM
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizer: userPoolAuthorizer
     }
   )
 

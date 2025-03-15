@@ -63,7 +63,10 @@ export function setupApiGateway(
     "DELETE",
     new apigateway.LambdaIntegration(deletePostLambda),
     {
-      authorizer: userPoolAuthorizer
+      authorizer: userPoolAuthorizer,
+      requestParameters: {
+        "method.request.header.Authorization": true
+      }
     }
   )
 
@@ -71,7 +74,10 @@ export function setupApiGateway(
     "POST",
     new apigateway.LambdaIntegration(createPostLambda),
     {
-      authorizer: userPoolAuthorizer
+      authorizer: userPoolAuthorizer,
+      requestParameters: {
+        "method.request.header.Authorization": true
+      }
     }
   )
 

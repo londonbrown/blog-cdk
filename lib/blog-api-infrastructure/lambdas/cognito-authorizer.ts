@@ -16,7 +16,6 @@ export function createCognitoAuthorizerLambda(
     lambdaPath: "lambdas/cognito-authorizer.zip",
     environment: {
       USER_POOL_ID: userPool.userPoolId,
-      AWS_REGION: Stack.of(scope).region,
       AWS_ACCOUNT_ID: Stack.of(scope).account,
       API_GATEWAY_ID: apiGateway.restApiId
     }

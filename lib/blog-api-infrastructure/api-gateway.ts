@@ -63,7 +63,7 @@ export function setupApiGateway(
     "DELETE",
     new apigateway.LambdaIntegration(deletePostLambda),
     {
-      authorizationType: apigateway.AuthorizationType.IAM,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
       authorizer: userPoolAuthorizer
     }
   )
@@ -91,14 +91,19 @@ export function setupApiGateway(
   authorRole.addToPolicy(
     new iam.PolicyStatement({
       actions: ["execute-api:Invoke"],
-      resources: [createPostMethod.methodArn]
+      resources: [getPostMethod.methodArn, getPostsMethod.methodArn, createPostMethod.methodArn]
     })
   )
 
   adminRole.addToPolicy(
     new iam.PolicyStatement({
       actions: ["execute-api:Invoke"],
-      resources: [deletePostMethod.methodArn]
+      resources: [
+        getPostMethod.methodArn,
+        getPostsMethod.methodArn,
+        createPostMethod.methodArn,
+        deletePostMethod.methodArn
+      ]
     })
   )
 

@@ -22,6 +22,7 @@ export function setupApiGateway(
   apiBlogDomainName: string,
   primaryCertificate: acm.Certificate,
   userPool: cognito.UserPool,
+  userPoolClient: cognito.UserPoolClient,
   bucket: s3.Bucket,
   table: dynamodb.Table,
   guestRole: iam.Role,
@@ -50,7 +51,13 @@ export function setupApiGateway(
     target: route53.RecordTarget.fromAlias(new route53_targets.ApiGatewayDomain(customDomain))
   })
 
-  const authorizerLambda = createCognitoAuthorizerLambda(scope, stage, userPool, api)
+  const authorizerLambda = createCognitoAuthorizerLambda(
+    scope,
+    stage,
+    userPool,
+    api,
+    userPoolClient
+  )
 
   const apiAuthorizer = new apigateway.RequestAuthorizer(scope, `APIAuthorizer${stage}`, {
     handler: authorizerLambda,

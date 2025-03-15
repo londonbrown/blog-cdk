@@ -1,4 +1,5 @@
 import * as cdk from "aws-cdk-lib"
+import * as cognito from "aws-cdk-lib/aws-cognito"
 import { Construct } from "constructs"
 
 import { setupApiGateway } from "./blog-api-infrastructure/api-gateway"
@@ -49,7 +50,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
     const bucketNamePrefix = process.env.BLOG_CONTENT_BUCKET_NAME_PREFIX
     const { blogContentBucket } = setupS3(this, stage, bucketNamePrefix)
 
-    const { adminRole, authorRole, guestRole, userPool } = setupCognito(this, stage)
+    const { adminRole, authorRole, guestRole, userPool, userPoolClient } = setupCognito(this, stage)
 
     setupApiGateway(
       this,
@@ -58,6 +59,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       apiBlogDomainName,
       primaryCertificate,
       userPool,
+      userPoolClient,
       blogContentBucket,
       blogPostsTable,
       guestRole,

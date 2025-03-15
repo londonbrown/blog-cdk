@@ -101,5 +101,5 @@ export function setupCognito(scope: Construct, stage: string) {
     }
   })
 
-  return { authorRole, guestRole, adminRole, userPool }
+  return { authorRole, guestRole, adminRole, userPool, userPoolClient }
 }

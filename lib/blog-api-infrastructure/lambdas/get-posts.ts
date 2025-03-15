@@ -15,8 +15,8 @@ export function createGetPostsLambda(
     rolePermissions: {
       policyStatements: [
         new iam.PolicyStatement({
-          actions: ["dynamodb:GetItem"],
-          resources: [table.tableArn]
+          actions: ["dynamodb:Query"],
+          resources: [`${table.tableArn}/index/PublishedIndex`]
         })
       ]
     },

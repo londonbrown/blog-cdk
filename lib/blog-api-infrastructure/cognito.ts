@@ -1,3 +1,4 @@
+import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import * as cognito from "aws-cdk-lib/aws-cognito"
 import * as iam from "aws-cdk-lib/aws-iam"
 import { Construct } from "constructs"
@@ -100,5 +101,5 @@ export function setupCognito(scope: Construct, stage: string) {
     }
   })
 
-  return { userPool, userPoolClient }
+  return { authorRole, guestRole, adminRole, userPool, userPoolClient }
 }

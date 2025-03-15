@@ -85,7 +85,7 @@ export function setupCognito(scope: Construct, stage: string) {
     roleMappings: {
       adminMapping: {
         type: "Rules",
-        ambiguousRoleResolution: "AuthenticatedRole",
+        ambiguousRoleResolution: "Deny",
         identityProvider: `${userPool.userPoolProviderName}:${userPoolClient.userPoolClientId}`,
         rulesConfiguration: {
           rules: [

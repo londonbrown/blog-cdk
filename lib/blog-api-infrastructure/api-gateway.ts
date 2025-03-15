@@ -125,6 +125,13 @@ export function setupApiGateway(
     })
   )
 
+  authenticatedPolicy.addStatements(
+    new iam.PolicyStatement({
+      actions: ["execute-api:Invoke"],
+      resources: [getPostMethod.methodArn, getPostsMethod.methodArn]
+    })
+  )
+
   authorPolicy.addStatements(
     new iam.PolicyStatement({
       actions: ["execute-api:Invoke"],

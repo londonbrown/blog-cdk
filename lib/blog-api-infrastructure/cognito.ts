@@ -47,7 +47,7 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     `BlogUserPoolResourceServer${stage}`,
     {
       userPool,
-      identifier: apiBlogDomain,
+      identifier: `https://${apiBlogDomain}`,
       scopes: [
         postReadScope,
         postWriteScope,

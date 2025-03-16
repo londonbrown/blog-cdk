@@ -1,5 +1,8 @@
 import * as cognito from "aws-cdk-lib/aws-cognito"
+import * as lambda from "aws-cdk-lib/aws-lambda"
 import { Construct } from "constructs"
+
+import { createLambdaFunction } from "./lambdas/lambda-config"
 
 export function setupCognito(scope: Construct, stage: string, apiBlogDomain: string) {
   const userPool = new cognito.UserPool(scope, `BlogUserPool${stage}`, {
@@ -14,6 +17,14 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     },
     standardAttributes: {
       email: { required: true, mutable: false }
+    },
+    lambdaTriggers: {
+      preTokenGeneration: createLambdaFunction(scope, `BlogUserPoolPreTokenGeneration${stage}`, {
+        lambdaPath: "lambdas/pretoken-generation.zip",
+        rolePermissions: {
+          policyStatements: []
+        }
+      })
     }
   })
 

@@ -12,7 +12,10 @@ export function createCognitoAuthorizerLambda(
   stage: string,
   userPool: UserPool,
   apiGateway: apigateway.RestApi,
-  userPoolClient: cognito.UserPoolClient
+  adminClient: cognito.UserPoolClient,
+  authorClient: cognito.UserPoolClient,
+  commenterClient: cognito.UserPoolClient,
+  guestClient: cognito.UserPoolClient
 ): lambda.Function {
   return createLambdaFunction(scope, `CognitoAuthorizerLambda${stage}`, {
     lambdaPath: "lambdas/cognito-authorizer.zip",
@@ -20,7 +23,10 @@ export function createCognitoAuthorizerLambda(
       USER_POOL_ID: userPool.userPoolId,
       AWS_ACCOUNT_ID: Stack.of(scope).account,
       API_GATEWAY_ID: apiGateway.restApiId,
-      COGNITO_CLIENT_ID: userPoolClient.userPoolClientId
+      ADMIN_CLIENT_ID: adminClient.userPoolClientId,
+      AUTHOR_CLIENT_ID: authorClient.userPoolClientId,
+      COMMENTER_CLIENT_ID: commenterClient.userPoolClientId,
+      GUEST_CLIENT_ID: guestClient.userPoolClientId
     }
   })
 }

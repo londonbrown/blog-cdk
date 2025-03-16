@@ -1,6 +1,4 @@
-import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import * as cognito from "aws-cdk-lib/aws-cognito"
-import * as iam from "aws-cdk-lib/aws-iam"
 import { Construct } from "constructs"
 
 export function setupCognito(scope: Construct, stage: string) {
@@ -19,87 +17,95 @@ export function setupCognito(scope: Construct, stage: string) {
     }
   })
 
-  const adminGroup = new cognito.UserPoolGroup(scope, `BlogUserPoolAdminGroup${stage}`, {
-    userPool: userPool,
-    groupName: "Admin",
-    description: "Administrators with full API access"
+  const postReadScope = new cognito.ResourceServerScope({
+    scopeName: "post:read",
+    scopeDescription: "Read blog posts"
+  })
+  const postWriteScope = new cognito.ResourceServerScope({
+    scopeName: "post:write",
+    scopeDescription: "Create blog posts"
+  })
+  const postDeleteScope = new cognito.ResourceServerScope({
+    scopeName: "post:delete",
+    scopeDescription: "Delete blog posts"
+  })
+  const commentReadScope = new cognito.ResourceServerScope({
+    scopeName: "comment:read",
+    scopeDescription: "Create comments"
+  })
+  const commentWriteScope = new cognito.ResourceServerScope({
+    scopeName: "comment:write",
+    scopeDescription: "Create comments"
+  })
+  const commentDeleteScope = new cognito.ResourceServerScope({
+    scopeName: "comment:delete",
+    scopeDescription: "Delete comments"
   })
 
-  const userPoolClient = new cognito.UserPoolClient(scope, `BlogUserPoolClient${stage}`, {
-    userPool,
-    authFlows: { userPassword: true, adminUserPassword: true }
-  })
+  const resourceServer = new cognito.UserPoolResourceServer(
+    scope,
+    `BlogUserPoolResourceServer${stage}`,
+    {
+      userPool,
+      identifier: "blog-api",
+      scopes: [
+        postReadScope,
+        postWriteScope,
+        postDeleteScope,
+        commentWriteScope,
+        commentDeleteScope
+      ]
+    }
+  )
 
-  const identityPool = new cognito.CfnIdentityPool(scope, `BlogIdentityPool${stage}`, {
-    allowUnauthenticatedIdentities: true,
-    cognitoIdentityProviders: [
-      {
-        clientId: userPoolClient.userPoolClientId,
-        providerName: userPool.userPoolProviderName
-      }
-    ]
-  })
-
-  const adminRole = new iam.Role(scope, `AdminIAMRole${stage}`, {
-    roleName: `AdminIAMRole${stage}`,
-    assumedBy: new iam.FederatedPrincipal(
-      "cognito-identity.amazonaws.com",
-      {
-        StringEquals: { "cognito-identity.amazonaws.com:aud": identityPool.ref },
-        "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "authenticated" }
-      },
-      "sts:AssumeRoleWithWebIdentity"
-    )
-  })
-
-  const authorRole = new iam.Role(scope, `AuthorIAMRole${stage}`, {
-    roleName: `AuthorIAMRole${stage}`,
-    assumedBy: new iam.FederatedPrincipal(
-      "cognito-identity.amazonaws.com",
-      {
-        StringEquals: { "cognito-identity.amazonaws.com:aud": identityPool.ref },
-        "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "authenticated" }
-      },
-      "sts:AssumeRoleWithWebIdentity"
-    )
-  })
-
-  const guestRole = new iam.Role(scope, `GuestIamRole${stage}`, {
-    roleName: `GuestIamRole${stage}`,
-    assumedBy: new iam.FederatedPrincipal(
-      "cognito-identity.amazonaws.com",
-      {
-        StringEquals: { "cognito-identity.amazonaws.com:aud": identityPool.ref },
-        "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "unauthenticated" }
-      },
-      "sts:AssumeRoleWithWebIdentity"
-    )
-  })
-
-  new cognito.CfnIdentityPoolRoleAttachment(scope, `IdentityPoolRoleAttachment${stage}`, {
-    identityPoolId: identityPool.ref,
-    roles: {
-      authenticated: authorRole.roleArn,
-      unauthenticated: guestRole.roleArn
-    },
-    roleMappings: {
-      adminMapping: {
-        type: "Rules",
-        ambiguousRoleResolution: "Deny",
-        identityProvider: `${userPool.userPoolProviderName}:${userPoolClient.userPoolClientId}`,
-        rulesConfiguration: {
-          rules: [
-            {
-              claim: "cognito:groups",
-              matchType: "Contains",
-              value: adminGroup.groupName,
-              roleArn: adminRole.roleArn
-            }
-          ]
-        }
-      }
+  const adminClient = userPool.addClient(`BlogAdminClient${stage}`, {
+    authFlows: { userPassword: true, adminUserPassword: true },
+    oAuth: {
+      scopes: [
+        cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
+        cognito.OAuthScope.resourceServer(resourceServer, postWriteScope),
+        cognito.OAuthScope.resourceServer(resourceServer, postDeleteScope),
+        cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
+        cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
+        cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
+      ]
     }
   })
 
-  return { authorRole, guestRole, adminRole, userPool, userPoolClient }
+  const authorClient = userPool.addClient(`BlogAuthorClient${stage}`, {
+    authFlows: { userPassword: true, adminUserPassword: true },
+    oAuth: {
+      scopes: [
+        cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
+        cognito.OAuthScope.resourceServer(resourceServer, postWriteScope),
+        cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
+        cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
+        cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
+      ]
+    }
+  })
+
+  const commenterClient = userPool.addClient(`BlogCommenterClient${stage}`, {
+    authFlows: { userPassword: true, adminUserPassword: true },
+    oAuth: {
+      scopes: [
+        cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
+        cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
+        cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
+        cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
+      ]
+    }
+  })
+
+  const guestClient = userPool.addClient(`BlogCommenterClient${stage}`, {
+    authFlows: { userPassword: true, adminUserPassword: true },
+    oAuth: {
+      scopes: [
+        cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
+        cognito.OAuthScope.resourceServer(resourceServer, commentReadScope)
+      ]
+    }
+  })
+
+  return { userPool, adminClient, authorClient, commenterClient, guestClient }
 }

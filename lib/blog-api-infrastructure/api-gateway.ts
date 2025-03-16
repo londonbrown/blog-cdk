@@ -22,12 +22,12 @@ export function setupApiGateway(
   apiBlogDomainName: string,
   primaryCertificate: acm.Certificate,
   userPool: cognito.UserPool,
-  userPoolClient: cognito.UserPoolClient,
+  adminClient: cognito.UserPoolClient,
+  authorClient: cognito.UserPoolClient,
+  commenterClient: cognito.UserPoolClient,
+  guestClient: cognito.UserPoolClient,
   bucket: s3.Bucket,
-  table: dynamodb.Table,
-  guestRole: iam.Role,
-  authorRole: iam.Role,
-  adminRole: iam.Role
+  table: dynamodb.Table
 ): apigateway.RestApi {
   const api = new apigateway.RestApi(scope, `BlogAPIGateway${stage}`, {
     restApiName: `Blog API (${stage})`,
@@ -56,7 +56,10 @@ export function setupApiGateway(
     stage,
     userPool,
     api,
-    userPoolClient
+    adminClient,
+    authorClient,
+    commenterClient,
+    guestClient
   )
 
   const apiAuthorizer = new apigateway.RequestAuthorizer(scope, `APIAuthorizer${stage}`, {
@@ -82,7 +85,8 @@ export function setupApiGateway(
     new apigateway.LambdaIntegration(deletePostLambda),
     {
       authorizationType: apigateway.AuthorizationType.CUSTOM,
-      authorizer: apiAuthorizer
+      authorizer: apiAuthorizer,
+      authorizationScopes: ["blog-api/post:delete"]
     }
   )
 
@@ -91,39 +95,16 @@ export function setupApiGateway(
     new apigateway.LambdaIntegration(createPostLambda),
     {
       authorizationType: apigateway.AuthorizationType.CUSTOM,
-      authorizer: apiAuthorizer
+      authorizer: apiAuthorizer,
+      authorizationScopes: ["blog-api/post:write"]
     }
   )
 
   const getPostsMethod = posts.addMethod("GET", new apigateway.LambdaIntegration(getPostsLambda), {
-    authorizationType: apigateway.AuthorizationType.IAM
+    authorizationType: apigateway.AuthorizationType.CUSTOM,
+    authorizer: apiAuthorizer,
+    authorizationScopes: ["blog-api/post:read"]
   })
-
-  guestRole.addToPolicy(
-    new iam.PolicyStatement({
-      actions: ["execute-api:Invoke"],
-      resources: [getPostMethod.methodArn, getPostsMethod.methodArn]
-    })
-  )
-
-  authorRole.addToPolicy(
-    new iam.PolicyStatement({
-      actions: ["execute-api:Invoke"],
-      resources: [getPostMethod.methodArn, getPostsMethod.methodArn, createPostMethod.methodArn]
-    })
-  )
-
-  adminRole.addToPolicy(
-    new iam.PolicyStatement({
-      actions: ["execute-api:Invoke"],
-      resources: [
-        getPostMethod.methodArn,
-        getPostsMethod.methodArn,
-        createPostMethod.methodArn,
-        deletePostMethod.methodArn
-      ]
-    })
-  )
 
   return api
 }

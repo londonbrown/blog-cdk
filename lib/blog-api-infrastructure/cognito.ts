@@ -20,6 +20,26 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     }
   })
 
+  const adminGroup = userPool.addGroup(`BlogAdminUserGroup${stage}`, {
+    groupName: "admin",
+    precedence: 0
+  })
+
+  const authorGroup = userPool.addGroup(`BlogAuthorUserGroup${stage}`, {
+    groupName: "author",
+    precedence: 1
+  })
+
+  const commentGroup = userPool.addGroup(`BlogCommenterUserGroup${stage}`, {
+    groupName: "commenter",
+    precedence: 2
+  })
+
+  const guestGroup = userPool.addGroup(`BlogGuestUserGroup${stage}`, {
+    groupName: "guest",
+    precedence: 99
+  })
+
   const preTokenGenerationLambda = createLambdaFunction(
     scope,
     `BlogUserPoolPreTokenGeneration${stage}`,

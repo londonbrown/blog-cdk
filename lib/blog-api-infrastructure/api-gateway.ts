@@ -78,30 +78,45 @@ export function setupApiGateway(
   const deletePostLambda = createDeletePostLambda(scope, stage, table, bucket)
 
   const getPostMethod = postById.addMethod("GET", new apigateway.LambdaIntegration(getPostLambda), {
-    authorizationType: apigateway.AuthorizationType.IAM
+    authorizationType: apigateway.AuthorizationType.CUSTOM,
+    authorizer: apiAuthorizer,
+    authorizationScopes: [
+      `https://${apiBlogDomainName}/post.read`,
+      `https://${apiBlogDomainName}/comment.read`
+    ]
   })
-  const deletePostMethod = postById.addMethod(
-    "DELETE",
-    new apigateway.LambdaIntegration(deletePostLambda),
-    {
-      authorizationType: apigateway.AuthorizationType.CUSTOM,
-      authorizer: apiAuthorizer
-    }
-  )
+
+  const getPostsMethod = posts.addMethod("GET", new apigateway.LambdaIntegration(getPostsLambda), {
+    authorizationType: apigateway.AuthorizationType.CUSTOM,
+    authorizer: apiAuthorizer,
+    authorizationScopes: [
+      `https://${apiBlogDomainName}/post.read`,
+      `https://${apiBlogDomainName}/comment.read`
+    ]
+  })
 
   const createPostMethod = postRoot.addMethod(
     "POST",
     new apigateway.LambdaIntegration(createPostLambda),
     {
       authorizationType: apigateway.AuthorizationType.CUSTOM,
-      authorizer: apiAuthorizer
+      authorizer: apiAuthorizer,
+      authorizationScopes: [`https://${apiBlogDomainName}/post.write`]
     }
   )
 
-  const getPostsMethod = posts.addMethod("GET", new apigateway.LambdaIntegration(getPostsLambda), {
-    authorizationType: apigateway.AuthorizationType.CUSTOM,
-    authorizer: apiAuthorizer
-  })
+  const deletePostMethod = postById.addMethod(
+    "DELETE",
+    new apigateway.LambdaIntegration(deletePostLambda),
+    {
+      authorizationType: apigateway.AuthorizationType.CUSTOM,
+      authorizer: apiAuthorizer,
+      authorizationScopes: [
+        `https://${apiBlogDomainName}/post.delete`,
+        `https://${apiBlogDomainName}/comment.delete`
+      ]
+    }
+  )
 
   return api
 }

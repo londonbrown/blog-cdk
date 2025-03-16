@@ -89,19 +89,13 @@ export function setupApiGateway(
   const getPostMethod = postById.addMethod("GET", new apigateway.LambdaIntegration(getPostLambda), {
     authorizationType: apigateway.AuthorizationType.CUSTOM,
     authorizer: apiAuthorizer,
-    authorizationScopes: [
-      `https://${apiBlogDomainName}/post.read`,
-      `https://${apiBlogDomainName}/comment.read`
-    ]
+    authorizationScopes: [`https://${apiBlogDomainName}/post.read`]
   })
 
   const getPostsMethod = posts.addMethod("GET", new apigateway.LambdaIntegration(getPostsLambda), {
     authorizationType: apigateway.AuthorizationType.CUSTOM,
     authorizer: apiAuthorizer,
-    authorizationScopes: [
-      `https://${apiBlogDomainName}/post.read`,
-      `https://${apiBlogDomainName}/comment.read`
-    ]
+    authorizationScopes: [`https://${apiBlogDomainName}/post.read`]
   })
 
   const createPostMethod = postRoot.addMethod(
@@ -120,10 +114,7 @@ export function setupApiGateway(
     {
       authorizationType: apigateway.AuthorizationType.COGNITO,
       authorizer: cognitoAuthorizer,
-      authorizationScopes: [
-        `https://${apiBlogDomainName}/post.delete`,
-        `https://${apiBlogDomainName}/comment.delete`
-      ]
+      authorizationScopes: [`https://${apiBlogDomainName}/post.delete`]
     }
   )
 

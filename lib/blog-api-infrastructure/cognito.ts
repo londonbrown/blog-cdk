@@ -32,7 +32,7 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
   )
 
   userPool.addTrigger(
-    UserPoolOperation.PRE_TOKEN_GENERATION,
+    UserPoolOperation.PRE_TOKEN_GENERATION_CONFIG,
     preTokenGenerationLambda,
     LambdaVersion.V2_0
   )

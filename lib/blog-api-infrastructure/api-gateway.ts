@@ -99,8 +99,7 @@ export function setupApiGateway(
     "POST",
     new apigateway.LambdaIntegration(createPostLambda),
     {
-      authorizationType: apigateway.AuthorizationType.CUSTOM,
-      authorizer: apiAuthorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
       authorizationScopes: [`https://${apiBlogDomainName}/post.write`]
     }
   )
@@ -109,8 +108,7 @@ export function setupApiGateway(
     "DELETE",
     new apigateway.LambdaIntegration(deletePostLambda),
     {
-      authorizationType: apigateway.AuthorizationType.CUSTOM,
-      authorizer: apiAuthorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
       authorizationScopes: [
         `https://${apiBlogDomainName}/post.delete`,
         `https://${apiBlogDomainName}/comment.delete`

@@ -42,21 +42,11 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     scopeDescription: "Delete comments"
   })
 
-  const resourceServer = new cognito.UserPoolResourceServer(
-    scope,
-    `BlogUserPoolResourceServer${stage}`,
-    {
-      userPool,
-      identifier: `https://${apiBlogDomain}`,
-      scopes: [
-        postReadScope,
-        postWriteScope,
-        postDeleteScope,
-        commentWriteScope,
-        commentDeleteScope
-      ]
-    }
-  )
+  const resourceServer = userPool.addResourceServer(`BlogUserPoolResourceServer${stage}`, {
+    userPoolResourceServerName: `BlogUserPoolResourceServer${stage}`,
+    identifier: `https://${apiBlogDomain}`,
+    scopes: [postReadScope, postWriteScope, postDeleteScope, commentWriteScope, commentDeleteScope]
+  })
 
   const adminClient = userPool.addClient(`BlogAdminClient${stage}`, {
     authFlows: { userPassword: true, adminUserPassword: true },

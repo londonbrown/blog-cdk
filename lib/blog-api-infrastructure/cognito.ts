@@ -43,8 +43,8 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
   })
 
   const resourceServer = userPool.addResourceServer(`BlogUserPoolResourceServer${stage}`, {
-    userPoolResourceServerName: `BlogUserPoolResourceServer${stage}`,
-    identifier: `https://${apiBlogDomain}`,
+    userPoolResourceServerName: `Blog API - ${stage}`,
+    identifier: `BlogAPI${stage}`,
     scopes: [postReadScope, postWriteScope, postDeleteScope, commentWriteScope, commentDeleteScope]
   })
 
@@ -52,12 +52,12 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     authFlows: { userPassword: true, adminUserPassword: true },
     oAuth: {
       scopes: [
-        cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, postWriteScope),
-        cognito.OAuthScope.resourceServer(resourceServer, postDeleteScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
+        // cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
+        // cognito.OAuthScope.resourceServer(resourceServer, postWriteScope),
+        // cognito.OAuthScope.resourceServer(resourceServer, postDeleteScope),
+        // cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
+        // cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
+        // cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
       ]
     }
   })
@@ -66,11 +66,11 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     authFlows: { userPassword: true, adminUserPassword: true },
     oAuth: {
       scopes: [
-        cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, postWriteScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
+        // cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
+        // cognito.OAuthScope.resourceServer(resourceServer, postWriteScope),
+        // cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
+        // cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
+        // cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
       ]
     }
   })
@@ -79,10 +79,10 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     authFlows: { userPassword: true, adminUserPassword: true },
     oAuth: {
       scopes: [
-        cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
+        // cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
+        // cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
+        // cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
+        // cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
       ]
     }
   })
@@ -91,8 +91,8 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     authFlows: { userPassword: true, adminUserPassword: true },
     oAuth: {
       scopes: [
-        cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentReadScope)
+        // cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
+        // cognito.OAuthScope.resourceServer(resourceServer, commentReadScope)
       ]
     }
   })

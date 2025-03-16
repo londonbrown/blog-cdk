@@ -7,6 +7,7 @@ import { setupCognito } from "./blog-api-infrastructure/cognito"
 import { setupDns } from "./blog-api-infrastructure/dns"
 import { setupDynamoDb } from "./blog-api-infrastructure/dynamodb"
 import { setupS3 } from "./blog-api-infrastructure/s3"
+import { setupSecrets } from "./blog-api-infrastructure/secrets"
 
 export enum BlogAPIStage {
   BETA = "Beta",
@@ -55,6 +56,8 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       apiBlogDomainName
     )
 
+    const { guestUserPasswordSecret } = setupSecrets(this, stage)
+
     setupApiGateway(
       this,
       stage,
@@ -66,6 +69,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       authorClient,
       commenterClient,
       guestClient,
+      guestUserPasswordSecret,
       blogContentBucket,
       blogPostsTable
     )

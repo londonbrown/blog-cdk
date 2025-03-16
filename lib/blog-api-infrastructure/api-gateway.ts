@@ -7,6 +7,7 @@ import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import * as route53 from "aws-cdk-lib/aws-route53"
 import * as route53_targets from "aws-cdk-lib/aws-route53-targets"
 import * as s3 from "aws-cdk-lib/aws-s3"
+import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager"
 import { Construct } from "constructs"
 
 import { createCognitoAuthorizerLambda } from "./lambdas/cognito-authorizer"
@@ -27,6 +28,7 @@ export function setupApiGateway(
   authorClient: cognito.UserPoolClient,
   commenterClient: cognito.UserPoolClient,
   guestClient: cognito.UserPoolClient,
+  guestUserPasswordSecret: secretsmanager.Secret,
   bucket: s3.Bucket,
   table: dynamodb.Table
 ): apigateway.RestApi {
@@ -84,7 +86,12 @@ export function setupApiGateway(
   const postById = postRoot.addResource("{id}")
   const posts = api.root.addResource("posts")
 
-  const guestJwtGeneratorLambda = createGuestJwtGeneratorLambda(scope, stage)
+  const guestJwtGeneratorLambda = createGuestJwtGeneratorLambda(
+    scope,
+    stage,
+    guestClient,
+    guestUserPasswordSecret
+  )
   const getPostLambda = createGetPostLambda(scope, stage, table, bucket)
   const getPostsLambda = createGetPostsLambda(scope, stage, table)
   const createPostLambda = createCreatePostLambda(scope, stage, table, bucket)

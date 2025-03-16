@@ -20,6 +20,11 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     }
   })
 
+  const guestUser = new cognito.CfnUserPoolUser(scope, `BlogGuestUser${stage}`, {
+    username: "guest-user",
+    userPoolId: userPool.userPoolId
+  })
+
   const adminGroup = userPool.addGroup(`BlogAdminUserGroup${stage}`, {
     groupName: "admin",
     precedence: 0
@@ -183,5 +188,5 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     }
   })
 
-  return { userPool, adminClient, authorClient, commenterClient, guestClient }
+  return { userPool, adminClient, authorClient, commenterClient, guestUser, guestClient }
 }

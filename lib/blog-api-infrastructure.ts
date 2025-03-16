@@ -50,13 +50,10 @@ export class BlogAPIInfrastructure extends cdk.Stack {
     const bucketNamePrefix = process.env.BLOG_CONTENT_BUCKET_NAME_PREFIX
     const { blogContentBucket } = setupS3(this, stage, bucketNamePrefix)
 
-    const { userPool, adminClient, authorClient, commenterClient, guestClient } = setupCognito(
-      this,
-      stage,
-      apiBlogDomainName
-    )
+    const { userPool, adminClient, authorClient, commenterClient, guestUser, guestClient } =
+      setupCognito(this, stage, apiBlogDomainName)
 
-    const { guestUserPasswordSecret } = setupSecrets(this, stage)
+    const { guestUserPasswordSecret } = setupSecrets(this, stage, guestUser)
 
     setupApiGateway(
       this,

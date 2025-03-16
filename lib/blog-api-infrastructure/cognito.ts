@@ -1,7 +1,7 @@
 import * as cognito from "aws-cdk-lib/aws-cognito"
 import { Construct } from "constructs"
 
-export function setupCognito(scope: Construct, stage: string) {
+export function setupCognito(scope: Construct, stage: string, apiBlogDomain: string) {
   const userPool = new cognito.UserPool(scope, `BlogUserPool${stage}`, {
     userPoolName: `BlogUserPool${stage}`,
     selfSignUpEnabled: true,
@@ -18,27 +18,27 @@ export function setupCognito(scope: Construct, stage: string) {
   })
 
   const postReadScope = new cognito.ResourceServerScope({
-    scopeName: "post:read",
+    scopeName: "post.read",
     scopeDescription: "Read blog posts"
   })
   const postWriteScope = new cognito.ResourceServerScope({
-    scopeName: "post:write",
+    scopeName: "post.write",
     scopeDescription: "Create blog posts"
   })
   const postDeleteScope = new cognito.ResourceServerScope({
-    scopeName: "post:delete",
+    scopeName: "post.delete",
     scopeDescription: "Delete blog posts"
   })
   const commentReadScope = new cognito.ResourceServerScope({
-    scopeName: "comment:read",
+    scopeName: "comment.read",
     scopeDescription: "Create comments"
   })
   const commentWriteScope = new cognito.ResourceServerScope({
-    scopeName: "comment:write",
+    scopeName: "comment.write",
     scopeDescription: "Create comments"
   })
   const commentDeleteScope = new cognito.ResourceServerScope({
-    scopeName: "comment:delete",
+    scopeName: "comment.delete",
     scopeDescription: "Delete comments"
   })
 
@@ -47,7 +47,7 @@ export function setupCognito(scope: Construct, stage: string) {
     `BlogUserPoolResourceServer${stage}`,
     {
       userPool,
-      identifier: "blog-api",
+      identifier: apiBlogDomain,
       scopes: [
         postReadScope,
         postWriteScope,

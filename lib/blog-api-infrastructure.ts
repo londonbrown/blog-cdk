@@ -52,7 +52,8 @@ export class BlogAPIInfrastructure extends cdk.Stack {
 
     const { userPool, adminClient, authorClient, commenterClient, guestClient } = setupCognito(
       this,
-      stage
+      stage,
+      apiBlogDomainName
     )
 
     setupApiGateway(

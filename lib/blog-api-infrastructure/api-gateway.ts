@@ -68,6 +68,15 @@ export function setupApiGateway(
     resultsCacheTtl: cdk.Duration.minutes(5)
   })
 
+  const cognitoAuthorizer = new apigateway.CognitoUserPoolsAuthorizer(
+    scope,
+    `BlogCognitoAuthorizer${stage}`,
+    {
+      cognitoUserPools: [userPool],
+      identitySource: apigateway.IdentitySource.header("Authorization")
+    }
+  )
+
   const postRoot = api.root.addResource("post")
   const postById = postRoot.addResource("{id}")
   const posts = api.root.addResource("posts")
@@ -100,7 +109,7 @@ export function setupApiGateway(
     new apigateway.LambdaIntegration(createPostLambda),
     {
       authorizationType: apigateway.AuthorizationType.COGNITO,
-      authorizer: apiAuthorizer,
+      authorizer: cognitoAuthorizer,
       authorizationScopes: [`https://${apiBlogDomainName}/post.write`]
     }
   )
@@ -110,7 +119,7 @@ export function setupApiGateway(
     new apigateway.LambdaIntegration(deletePostLambda),
     {
       authorizationType: apigateway.AuthorizationType.COGNITO,
-      authorizer: apiAuthorizer,
+      authorizer: cognitoAuthorizer,
       authorizationScopes: [
         `https://${apiBlogDomainName}/post.delete`,
         `https://${apiBlogDomainName}/comment.delete`

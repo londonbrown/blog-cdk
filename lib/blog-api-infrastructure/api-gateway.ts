@@ -85,8 +85,7 @@ export function setupApiGateway(
     new apigateway.LambdaIntegration(deletePostLambda),
     {
       authorizationType: apigateway.AuthorizationType.CUSTOM,
-      authorizer: apiAuthorizer,
-      authorizationScopes: ["blog-api/post:delete"]
+      authorizer: apiAuthorizer
     }
   )
 
@@ -95,15 +94,13 @@ export function setupApiGateway(
     new apigateway.LambdaIntegration(createPostLambda),
     {
       authorizationType: apigateway.AuthorizationType.CUSTOM,
-      authorizer: apiAuthorizer,
-      authorizationScopes: ["blog-api/post:write"]
+      authorizer: apiAuthorizer
     }
   )
 
   const getPostsMethod = posts.addMethod("GET", new apigateway.LambdaIntegration(getPostsLambda), {
     authorizationType: apigateway.AuthorizationType.CUSTOM,
-    authorizer: apiAuthorizer,
-    authorizationScopes: ["blog-api/post:read"]
+    authorizer: apiAuthorizer
   })
 
   return api

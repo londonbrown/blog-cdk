@@ -126,12 +126,16 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     scopes: [
       adminReadScope,
       adminWriteScope,
+      adminDeleteScope,
       authorReadScope,
       authorWriteScope,
+      authorDeleteScope,
       commenterReadScope,
       commenterWriteScope,
+      commenterDeleteScope,
       guestReadScope,
-      guestWriteScope
+      guestWriteScope,
+      guestDeleteScope
     ]
   })
 

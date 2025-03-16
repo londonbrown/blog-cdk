@@ -60,41 +60,78 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     LambdaVersion.V2_0
   )
 
-  const postReadScope = new cognito.ResourceServerScope({
-    scopeName: "post.read",
-    scopeDescription: "Read blog posts"
+  const adminReadScope = new cognito.ResourceServerScope({
+    scopeName: "admin.read",
+    scopeDescription: "Admin read auth scope"
   })
-  const postWriteScope = new cognito.ResourceServerScope({
-    scopeName: "post.write",
-    scopeDescription: "Create blog posts"
+
+  const adminWriteScope = new cognito.ResourceServerScope({
+    scopeName: "admin.write",
+    scopeDescription: "Admin write auth scope"
   })
-  const postDeleteScope = new cognito.ResourceServerScope({
-    scopeName: "post.delete",
-    scopeDescription: "Delete blog posts"
+
+  const adminDeleteScope = new cognito.ResourceServerScope({
+    scopeName: "admin.delete",
+    scopeDescription: "Admin write auth scope"
   })
-  const commentReadScope = new cognito.ResourceServerScope({
-    scopeName: "comment.read",
-    scopeDescription: "Create comments"
+
+  const authorReadScope = new cognito.ResourceServerScope({
+    scopeName: "author.read",
+    scopeDescription: "Author read auth scope"
   })
-  const commentWriteScope = new cognito.ResourceServerScope({
-    scopeName: "comment.write",
-    scopeDescription: "Create comments"
+
+  const authorWriteScope = new cognito.ResourceServerScope({
+    scopeName: "author.write",
+    scopeDescription: "Author write auth scope"
   })
-  const commentDeleteScope = new cognito.ResourceServerScope({
-    scopeName: "comment.delete",
-    scopeDescription: "Delete comments"
+
+  const authorDeleteScope = new cognito.ResourceServerScope({
+    scopeName: "author.delete",
+    scopeDescription: "Author delete auth scope"
+  })
+
+  const commenterReadScope = new cognito.ResourceServerScope({
+    scopeName: "commenter.read",
+    scopeDescription: "Commenter read auth scope"
+  })
+
+  const commenterWriteScope = new cognito.ResourceServerScope({
+    scopeName: "commenter.write",
+    scopeDescription: "Commenter write auth scope"
+  })
+
+  const commenterDeleteScope = new cognito.ResourceServerScope({
+    scopeName: "commenter.delete",
+    scopeDescription: "Commenter delete auth scope"
+  })
+
+  const guestReadScope = new cognito.ResourceServerScope({
+    scopeName: "guest.read",
+    scopeDescription: "Guest read auth scope"
+  })
+
+  const guestWriteScope = new cognito.ResourceServerScope({
+    scopeName: "guest.write",
+    scopeDescription: "Guest write auth scope"
+  })
+
+  const guestDeleteScope = new cognito.ResourceServerScope({
+    scopeName: "guest.delete",
+    scopeDescription: "Guest delete auth scope"
   })
 
   const resourceServer = userPool.addResourceServer(`BlogUserPoolResourceServer${stage}`, {
     userPoolResourceServerName: `Blog API - ${stage}`,
     identifier: `https://${apiBlogDomain}`,
     scopes: [
-      postReadScope,
-      postWriteScope,
-      postDeleteScope,
-      commentReadScope,
-      commentWriteScope,
-      commentDeleteScope
+      adminReadScope,
+      adminWriteScope,
+      authorReadScope,
+      authorWriteScope,
+      commenterReadScope,
+      commenterWriteScope,
+      guestReadScope,
+      guestWriteScope
     ]
   })
 
@@ -102,12 +139,9 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     authFlows: { userPassword: true, adminUserPassword: true },
     oAuth: {
       scopes: [
-        cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, postWriteScope),
-        cognito.OAuthScope.resourceServer(resourceServer, postDeleteScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
+        cognito.OAuthScope.resourceServer(resourceServer, adminReadScope),
+        cognito.OAuthScope.resourceServer(resourceServer, adminWriteScope),
+        cognito.OAuthScope.resourceServer(resourceServer, adminDeleteScope)
       ]
     }
   })
@@ -116,11 +150,9 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     authFlows: { userPassword: true, adminUserPassword: true },
     oAuth: {
       scopes: [
-        cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, postWriteScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
+        cognito.OAuthScope.resourceServer(resourceServer, authorReadScope),
+        cognito.OAuthScope.resourceServer(resourceServer, authorWriteScope),
+        cognito.OAuthScope.resourceServer(resourceServer, authorDeleteScope)
       ]
     }
   })
@@ -129,10 +161,9 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     authFlows: { userPassword: true, adminUserPassword: true },
     oAuth: {
       scopes: [
-        cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
+        cognito.OAuthScope.resourceServer(resourceServer, commenterReadScope),
+        cognito.OAuthScope.resourceServer(resourceServer, commenterWriteScope),
+        cognito.OAuthScope.resourceServer(resourceServer, commenterDeleteScope)
       ]
     }
   })
@@ -141,8 +172,9 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
     authFlows: { userPassword: true, adminUserPassword: true },
     oAuth: {
       scopes: [
-        cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
-        cognito.OAuthScope.resourceServer(resourceServer, commentReadScope)
+        cognito.OAuthScope.resourceServer(resourceServer, guestReadScope),
+        cognito.OAuthScope.resourceServer(resourceServer, guestWriteScope),
+        cognito.OAuthScope.resourceServer(resourceServer, guestDeleteScope)
       ]
     }
   })

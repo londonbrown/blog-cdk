@@ -49,52 +49,52 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
   })
 
   const adminClient = userPool.addClient(`BlogAdminClient${stage}`, {
-    authFlows: { userPassword: true, adminUserPassword: true },
-    oAuth: {
-      scopes: [
-        // cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
-        // cognito.OAuthScope.resourceServer(resourceServer, postWriteScope),
-        // cognito.OAuthScope.resourceServer(resourceServer, postDeleteScope),
-        // cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
-        // cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
-        // cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
-      ]
-    }
+    authFlows: { userPassword: true, adminUserPassword: true }
+    // oAuth: {
+    //   scopes: [
+    // cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
+    // cognito.OAuthScope.resourceServer(resourceServer, postWriteScope),
+    // cognito.OAuthScope.resourceServer(resourceServer, postDeleteScope),
+    // cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
+    // cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
+    // cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
+    // ]
+    // }
   })
 
   const authorClient = userPool.addClient(`BlogAuthorClient${stage}`, {
-    authFlows: { userPassword: true, adminUserPassword: true },
-    oAuth: {
-      scopes: [
-        // cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
-        // cognito.OAuthScope.resourceServer(resourceServer, postWriteScope),
-        // cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
-        // cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
-        // cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
-      ]
-    }
+    authFlows: { userPassword: true, adminUserPassword: true }
+    // oAuth: {
+    //   scopes: [
+    // cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
+    // cognito.OAuthScope.resourceServer(resourceServer, postWriteScope),
+    // cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
+    // cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
+    // cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
+    // ]
+    // }
   })
 
   const commenterClient = userPool.addClient(`BlogCommenterClient${stage}`, {
-    authFlows: { userPassword: true, adminUserPassword: true },
-    oAuth: {
-      scopes: [
-        // cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
-        // cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
-        // cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
-        // cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
-      ]
-    }
+    authFlows: { userPassword: true, adminUserPassword: true }
+    // oAuth: {
+    //   scopes: [
+    // cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
+    // cognito.OAuthScope.resourceServer(resourceServer, commentReadScope),
+    // cognito.OAuthScope.resourceServer(resourceServer, commentWriteScope),
+    // cognito.OAuthScope.resourceServer(resourceServer, commentDeleteScope)
+    // ]
+    // }
   })
 
   const guestClient = userPool.addClient(`BlogGuestClient${stage}`, {
-    authFlows: { userPassword: true, adminUserPassword: true },
-    oAuth: {
-      scopes: [
-        // cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
-        // cognito.OAuthScope.resourceServer(resourceServer, commentReadScope)
-      ]
-    }
+    authFlows: { userPassword: true, adminUserPassword: true }
+    // oAuth: {
+    //   scopes: [
+    // cognito.OAuthScope.resourceServer(resourceServer, postReadScope),
+    // cognito.OAuthScope.resourceServer(resourceServer, commentReadScope)
+    // ]
+    // }
   })
 
   return { userPool, adminClient, authorClient, commenterClient, guestClient }

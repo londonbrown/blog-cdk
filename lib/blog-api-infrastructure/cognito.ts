@@ -47,6 +47,9 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
       lambdaPath: "lambdas/pretoken-generation.zip",
       rolePermissions: {
         policyStatements: []
+      },
+      environment: {
+        API_BLOG_DOMAIN: apiBlogDomain
       }
     }
   )

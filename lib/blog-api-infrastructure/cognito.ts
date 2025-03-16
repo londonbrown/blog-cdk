@@ -97,7 +97,7 @@ export function setupCognito(scope: Construct, stage: string) {
     }
   })
 
-  const guestClient = userPool.addClient(`BlogCommenterClient${stage}`, {
+  const guestClient = userPool.addClient(`BlogGuestClient${stage}`, {
     authFlows: { userPassword: true, adminUserPassword: true },
     oAuth: {
       scopes: [

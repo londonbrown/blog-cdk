@@ -4,6 +4,14 @@ import { Construct } from "constructs"
 
 import { createLambdaFunction } from "./lambdas/lambda-config"
 
+function getStageKey(group: string, stage: string) {
+  if (stage === "Prod") {
+    return group
+  } else {
+    return `${group}+${stage}`
+  }
+}
+
 export function setupCognito(scope: Construct, stage: string, apiBlogDomain: string) {
   const userPool = new cognito.UserPool(scope, `BlogUserPool${stage}`, {
     userPoolName: `BlogUserPool${stage}`,
@@ -21,33 +29,33 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
   })
 
   const guestUser = new cognito.CfnUserPoolUser(scope, `BlogGuestUser${stage}`, {
-    username: "guest-user",
+    username: getStageKey("blog-guest-user", stage),
     userPoolId: userPool.userPoolId,
     userAttributes: [
       {
         name: "email",
-        value: `guest-user@${apiBlogDomain}`
+        value: `${getStageKey("blog-guest-user", stage)}@${apiBlogDomain}`
       }
     ]
   })
 
   const adminGroup = userPool.addGroup(`BlogAdminUserGroup${stage}`, {
-    groupName: "admin",
+    groupName: getStageKey("blog-admin", stage),
     precedence: 0
   })
 
   const authorGroup = userPool.addGroup(`BlogAuthorUserGroup${stage}`, {
-    groupName: "author",
+    groupName: getStageKey("blog-author", stage),
     precedence: 1
   })
 
   const commentGroup = userPool.addGroup(`BlogCommenterUserGroup${stage}`, {
-    groupName: "commenter",
+    groupName: getStageKey("blog-commenter", stage),
     precedence: 2
   })
 
   const guestGroup = userPool.addGroup(`BlogGuestUserGroup${stage}`, {
-    groupName: "guest",
+    groupName: getStageKey("blog-guest", stage),
     precedence: 99
   })
 
@@ -60,7 +68,8 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
         policyStatements: []
       },
       environment: {
-        API_BLOG_DOMAIN: apiBlogDomain
+        API_BLOG_DOMAIN: apiBlogDomain,
+        STAGE: stage
       }
     }
   )

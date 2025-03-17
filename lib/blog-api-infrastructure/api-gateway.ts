@@ -10,7 +10,6 @@ import * as s3 from "aws-cdk-lib/aws-s3"
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager"
 import { Construct } from "constructs"
 
-import { createCognitoAuthorizerLambda } from "./lambdas/cognito-authorizer"
 import { createCreatePostLambda } from "./lambdas/create-post"
 import { createDeletePostLambda } from "./lambdas/delete-post"
 import { createGetPostLambda } from "./lambdas/get-post"
@@ -24,9 +23,6 @@ export function setupApiGateway(
   apiBlogDomainName: string,
   primaryCertificate: acm.Certificate,
   userPool: cognito.UserPool,
-  adminClient: cognito.UserPoolClient,
-  authorClient: cognito.UserPoolClient,
-  commenterClient: cognito.UserPoolClient,
   guestClient: cognito.UserPoolClient,
   guestUserPasswordSecret: secretsmanager.Secret,
   bucket: s3.Bucket,
@@ -52,23 +48,6 @@ export function setupApiGateway(
     zone: hostedZone,
     recordName: apiBlogDomainName,
     target: route53.RecordTarget.fromAlias(new route53_targets.ApiGatewayDomain(customDomain))
-  })
-
-  const authorizerLambda = createCognitoAuthorizerLambda(
-    scope,
-    stage,
-    userPool,
-    api,
-    adminClient,
-    authorClient,
-    commenterClient,
-    guestClient
-  )
-
-  const apiAuthorizer = new apigateway.RequestAuthorizer(scope, `APIAuthorizer${stage}`, {
-    handler: authorizerLambda,
-    identitySources: [apigateway.IdentitySource.header("Authorization")],
-    resultsCacheTtl: cdk.Duration.minutes(5)
   })
 
   const cognitoAuthorizer = new apigateway.CognitoUserPoolsAuthorizer(
@@ -106,8 +85,8 @@ export function setupApiGateway(
   )
 
   const getPostMethod = postById.addMethod("GET", new apigateway.LambdaIntegration(getPostLambda), {
-    authorizationType: apigateway.AuthorizationType.CUSTOM,
-    authorizer: apiAuthorizer,
+    authorizationType: apigateway.AuthorizationType.COGNITO,
+    authorizer: cognitoAuthorizer,
     authorizationScopes: [
       `https://${apiBlogDomainName}/admin.read`,
       `https://${apiBlogDomainName}/author.read`,
@@ -117,8 +96,8 @@ export function setupApiGateway(
   })
 
   const getPostsMethod = posts.addMethod("GET", new apigateway.LambdaIntegration(getPostsLambda), {
-    authorizationType: apigateway.AuthorizationType.CUSTOM,
-    authorizer: apiAuthorizer,
+    authorizationType: apigateway.AuthorizationType.COGNITO,
+    authorizer: cognitoAuthorizer,
     authorizationScopes: [
       `https://${apiBlogDomainName}/admin.read`,
       `https://${apiBlogDomainName}/author.read`,

@@ -1,4 +1,6 @@
 import * as cognito from "aws-cdk-lib/aws-cognito"
+import * as iam from "aws-cdk-lib/aws-iam"
+import { Effect } from "aws-cdk-lib/aws-iam"
 import * as lambda from "aws-cdk-lib/aws-lambda"
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager"
 import { Construct } from "constructs"
@@ -14,7 +16,13 @@ export function createGuestJwtGeneratorLambda(
   return createLambdaFunction(scope, `GuestJwtGeneratorLambda${stage}`, {
     lambdaPath: "lambdas/guest-jwt-generator.zip",
     rolePermissions: {
-      policyStatements: []
+      policyStatements: [
+        new iam.PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ["secretsmanager:GetSecretValue"],
+          resources: [guestUserPasswordSecret.secretArn]
+        })
+      ]
     },
     environment: {
       COGNITO_USER_PASSWORD_SECRET_NAME: guestUserPasswordSecret.secretName,

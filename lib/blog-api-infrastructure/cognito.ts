@@ -22,7 +22,13 @@ export function setupCognito(scope: Construct, stage: string, apiBlogDomain: str
 
   const guestUser = new cognito.CfnUserPoolUser(scope, `BlogGuestUser${stage}`, {
     username: "guest-user",
-    userPoolId: userPool.userPoolId
+    userPoolId: userPool.userPoolId,
+    userAttributes: [
+      {
+        name: "email",
+        value: `guest-user@${apiBlogDomain}`
+      }
+    ]
   })
 
   const adminGroup = userPool.addGroup(`BlogAdminUserGroup${stage}`, {

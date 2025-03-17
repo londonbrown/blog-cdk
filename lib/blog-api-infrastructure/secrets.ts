@@ -14,8 +14,6 @@ export function setupSecrets(
       secretName: `BlogGuestUserPassword${stage}`,
       generateSecretString: {
         secretStringTemplate: JSON.stringify({ username: cognitoUser.username }),
-        excludePunctuation: true,
-        requireEachIncludedType: true,
         generateStringKey: "password",
         passwordLength: 32
       }

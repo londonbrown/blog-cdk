@@ -10,6 +10,7 @@ import * as s3 from "aws-cdk-lib/aws-s3"
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager"
 import { Construct } from "constructs"
 
+import { createCreateContentLambda } from "./lambdas/create-content"
 import { createCreatePostLambda } from "./lambdas/create-post"
 import { createDeletePostLambda } from "./lambdas/delete-post"
 import { createGetPostLambda } from "./lambdas/get-post"
@@ -25,8 +26,8 @@ export function setupApiGateway(
   userPool: cognito.UserPool,
   guestClient: cognito.UserPoolClient,
   guestUserPasswordSecret: secretsmanager.Secret,
-  bucket: s3.Bucket,
-  table: dynamodb.Table
+  contentBucket: s3.Bucket,
+  postsTable: dynamodb.Table
 ): apigateway.RestApi {
   const api = new apigateway.RestApi(scope, `BlogAPIGateway${stage}`, {
     restApiName: `Blog API (${stage})`,
@@ -63,6 +64,7 @@ export function setupApiGateway(
   const guestTokenRoot = authRoot.addResource("guest-token")
   const postRoot = api.root.addResource("post")
   const postById = postRoot.addResource("{id}")
+  const contentRoot = api.root.addResource("content")
   const posts = api.root.addResource("posts")
 
   const guestJwtGeneratorLambda = createGuestJwtGeneratorLambda(
@@ -71,10 +73,11 @@ export function setupApiGateway(
     guestClient,
     guestUserPasswordSecret
   )
-  const getPostLambda = createGetPostLambda(scope, stage, table, bucket)
-  const getPostsLambda = createGetPostsLambda(scope, stage, table)
-  const createPostLambda = createCreatePostLambda(scope, stage, table, bucket)
-  const deletePostLambda = createDeletePostLambda(scope, stage, table, bucket)
+  const getPostLambda = createGetPostLambda(scope, stage, postsTable)
+  const getPostsLambda = createGetPostsLambda(scope, stage, postsTable)
+  const createPostLambda = createCreatePostLambda(scope, stage, postsTable, contentBucket)
+  const createContentLambda = createCreateContentLambda(scope, stage, postsTable, contentBucket)
+  const deletePostLambda = createDeletePostLambda(scope, stage, postsTable)
 
   const guestJwtGeneratorMethod = guestTokenRoot.addMethod(
     "GET",
@@ -109,6 +112,19 @@ export function setupApiGateway(
   const createPostMethod = postRoot.addMethod(
     "POST",
     new apigateway.LambdaIntegration(createPostLambda),
+    {
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizer: cognitoAuthorizer,
+      authorizationScopes: [
+        `https://${apiBlogDomainName}/admin.write`,
+        `https://${apiBlogDomainName}/author.write`
+      ]
+    }
+  )
+
+  const createContentMethod = contentRoot.addMethod(
+    "POST",
+    new apigateway.LambdaIntegration(createContentLambda),
     {
       authorizationType: apigateway.AuthorizationType.COGNITO,
       authorizer: cognitoAuthorizer,

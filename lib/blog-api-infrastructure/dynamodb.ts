@@ -2,7 +2,10 @@ import * as cdk from "aws-cdk-lib"
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import { Construct } from "constructs"
 
-export function setupDynamoDb(scope: Construct, stage: String): { blogPostsTable: dynamodb.Table } {
+export function setupDynamoDb(
+  scope: Construct,
+  stage: String
+): { blogPostsTable: dynamodb.Table; blogContentTable: dynamodb.Table } {
   const blogPostsTable = new dynamodb.Table(scope, `BlogPostsTable${stage}`, {
     tableName: `BlogPosts${stage}`,
     partitionKey: { name: "PK", type: dynamodb.AttributeType.STRING },
@@ -23,9 +26,17 @@ export function setupDynamoDb(scope: Construct, stage: String): { blogPostsTable
     sortKey: { name: "createdAt", type: dynamodb.AttributeType.STRING }
   })
 
+  const blogContentTable = new dynamodb.Table(scope, `BlogContentTable${stage}`, {
+    tableName: `BlogContent${stage}`,
+    partitionKey: { name: "PK", type: dynamodb.AttributeType.STRING },
+    sortKey: { name: "SK", type: dynamodb.AttributeType.STRING },
+    billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+    removalPolicy: cdk.RemovalPolicy.RETAIN
+  })
+
   new cdk.CfnOutput(scope, "BlogPostsTableName", {
     value: blogPostsTable.tableName
   })
 
-  return { blogPostsTable }
+  return { blogPostsTable, blogContentTable }
 }

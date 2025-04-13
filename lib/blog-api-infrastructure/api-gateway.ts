@@ -28,7 +28,8 @@ export function setupApiGateway(
   guestClient: cognito.UserPoolClient,
   guestUserPasswordSecret: secretsmanager.Secret,
   contentBucket: s3.Bucket,
-  postsTable: dynamodb.Table
+  postsTable: dynamodb.Table,
+  contentTable: dynamodb.Table
 ): apigateway.RestApi {
   const api = new apigateway.RestApi(scope, `BlogAPIGateway${stage}`, {
     restApiName: `Blog API (${stage})`,
@@ -78,9 +79,10 @@ export function setupApiGateway(
   const getPostLambda = createGetPostLambda(scope, stage, postsTable)
   const getPostsLambda = createGetPostsLambda(scope, stage, postsTable)
   const createPostLambda = createCreatePostLambda(scope, stage, postsTable, contentBucket)
-  const createContentLambda = createCreateContentLambda(scope, stage, postsTable, contentBucket)
-  const getContentLambda = createGetContentLambda(scope, stage, postsTable, contentBucket)
   const deletePostLambda = createDeletePostLambda(scope, stage, postsTable)
+
+  const createContentLambda = createCreateContentLambda(scope, stage, contentTable, contentBucket)
+  const getContentLambda = createGetContentLambda(scope, stage, contentTable, contentBucket)
 
   const guestJwtGeneratorMethod = guestTokenRoot.addMethod(
     "GET",

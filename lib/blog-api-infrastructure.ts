@@ -41,7 +41,7 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       hostedZone
     )
 
-    const { blogPostsTable } = setupDynamoDb(this, stage)
+    const { blogPostsTable, blogContentTable } = setupDynamoDb(this, stage)
 
     if (!process.env.BLOG_CONTENT_BUCKET_NAME_PREFIX) {
       throw new Error("BLOG_CONTENT_BUCKET_NAME_PREFIX must be set in the environment")
@@ -65,7 +65,8 @@ export class BlogAPIInfrastructure extends cdk.Stack {
       guestClient,
       guestUserPasswordSecret,
       blogContentBucket,
-      blogPostsTable
+      blogPostsTable,
+      blogContentTable
     )
   }
 }

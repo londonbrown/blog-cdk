@@ -66,6 +66,7 @@ export function setupApiGateway(
   const postRoot = api.root.addResource("post")
   const postById = postRoot.addResource("{id}")
   const contentRoot = api.root.addResource("content")
+  const contentById = contentRoot.addResource("{id}")
   const posts = api.root.addResource("posts")
 
   const guestJwtGeneratorLambda = createGuestJwtGeneratorLambda(
@@ -137,7 +138,7 @@ export function setupApiGateway(
     }
   )
 
-  const getContentMethod = contentRoot.addMethod(
+  const getContentMethod = contentById.addMethod(
     "GET",
     new apigateway.LambdaIntegration(getContentLambda),
     {

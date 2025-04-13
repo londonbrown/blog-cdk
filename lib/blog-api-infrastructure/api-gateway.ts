@@ -33,8 +33,7 @@ export function setupApiGateway(
 ): apigateway.RestApi {
   const api = new apigateway.RestApi(scope, `BlogAPIGateway${stage}`, {
     restApiName: `Blog API (${stage})`,
-    description: "API Gateway for the blog service",
-    binaryMediaTypes: ["image/*", "application/octet-stream", "application/json", "text/*"]
+    description: "API Gateway for the blog service"
   })
 
   const customDomain = new apigateway.DomainName(scope, `BlogAPIDomain${stage}`, {

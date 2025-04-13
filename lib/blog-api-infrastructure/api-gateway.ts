@@ -13,6 +13,7 @@ import { Construct } from "constructs"
 import { createCreateContentLambda } from "./lambdas/create-content"
 import { createCreatePostLambda } from "./lambdas/create-post"
 import { createDeletePostLambda } from "./lambdas/delete-post"
+import { createGetContentLambda } from "./lambdas/get-content"
 import { createGetPostLambda } from "./lambdas/get-post"
 import { createGetPostsLambda } from "./lambdas/get-posts"
 import { createGuestJwtGeneratorLambda } from "./lambdas/guest-jwt-generator"
@@ -77,6 +78,7 @@ export function setupApiGateway(
   const getPostsLambda = createGetPostsLambda(scope, stage, postsTable)
   const createPostLambda = createCreatePostLambda(scope, stage, postsTable, contentBucket)
   const createContentLambda = createCreateContentLambda(scope, stage, postsTable, contentBucket)
+  const getContentLambda = createGetContentLambda(scope, stage, postsTable, contentBucket)
   const deletePostLambda = createDeletePostLambda(scope, stage, postsTable)
 
   const guestJwtGeneratorMethod = guestTokenRoot.addMethod(
@@ -131,6 +133,21 @@ export function setupApiGateway(
       authorizationScopes: [
         `https://${apiBlogDomainName}/admin.write`,
         `https://${apiBlogDomainName}/author.write`
+      ]
+    }
+  )
+
+  const getContentMethod = contentRoot.addMethod(
+    "GET",
+    new apigateway.LambdaIntegration(getContentLambda),
+    {
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizer: cognitoAuthorizer,
+      authorizationScopes: [
+        `https://${apiBlogDomainName}/admin.read`,
+        `https://${apiBlogDomainName}/author.read`,
+        `https://${apiBlogDomainName}/commenter.read`,
+        `https://${apiBlogDomainName}/guest.read`
       ]
     }
   )
